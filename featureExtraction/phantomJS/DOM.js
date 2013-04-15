@@ -330,7 +330,9 @@ page.open(url, function(status) {
                     var stringValue = null;
                     
                     if (xpathString != null && xpathString.length > 0 && contextNode != null && fieldParserKey == null) {
-                        stringValue = getScalarWithXPath(contextNode, xpathString);
+                         var node = getScalarWithXPath(contextNode, xpathString);
+                         stringValue = node.stringValue;
+                        console.log("node: " + node + " label: " + mmdScalarField.name + " value: " + stringValue + " xpath: " + xpathString);
                     } else if (fieldParserKey != null) {
                         stringValue = getFieldParserValueByKey(fieldParserContext, fieldParserKey);
                     }
@@ -415,7 +417,7 @@ page.open(url, function(status) {
                             }
                             else {
                                 var element = { };
-                                element = recursivelyExtractMetadata(mmdCollectionField.kids[0].composite, thisNode, element, thisFieldParserContext);
+                                element = recursivelyExtractNodes(mmdCollectionField.kids[0].composite, thisNode, element, thisFieldParserContext);
 
                                 var newElement = clone(element);
                                 	
@@ -689,7 +691,7 @@ page.open(url, function(status) {
                 */
                 var getScalarWithXPath = function(contextNode, xpath)
                 {
-                    return doc.evaluate(xpath, contextNode, null, XPathResult.STRING_TYPE, null).stringValue;
+                    return doc.evaluate(xpath, contextNode, null, XPathResult.STRING_TYPE, null);
                 }
 
                 /**
@@ -785,7 +787,7 @@ page.open(url, function(status) {
                 	});
                 }
                 
-                //getNodeCollectionFromMetaMetadata();
+                getNodeCollectionFromMetaMetadata();
   
                 console.log("DOM Tree Depth: " + getTreeDepthAndLocalFeatures(document.documentElement, 
                 								document.documentElement.offsetLeft, document.documentElement.offsetTop));
