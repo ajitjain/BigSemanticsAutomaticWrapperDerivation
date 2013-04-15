@@ -4,6 +4,7 @@
  */
 
 var fs = require('fs');
+fs.write("output.txt", '', 'w');	//remove this when features are to be obtained from multiple pages
 
 var url = "http://www.amazon.com/Sennheiser-HD-280-Pro-Headphones/dp/B000065BPB/ref=sr_1_17?s=musical-instruments&ie=UTF8&qid=1362772852&sr=1-17";
 var serviceURL = "http://ecology-service.cse.tamu.edu/BigSemanticsService/mmd.json?url=" + encodeURIComponent(url);
@@ -14,6 +15,7 @@ var p = require('webpage').create();
 page.onConsoleMessage = function(msg) {
     console.log(msg);
     fs.write("output.txt", msg, 'a');
+    fs.write("output.txt", '\n', 'a');
 };
 
 p.onConsoleMessage = function(msg) {
@@ -33,6 +35,9 @@ page.onCallback = function() {
 	return serviceResponse;
 }
 
+/**
+ * note: page.evaluate() is a sandboxed environment and thus requires function definitions to be present right there. 
+ */
 page.open(url, function(status) {
     if ( status === "success" ) {
     	page.includeJs("http://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js", function() {
@@ -48,7 +53,8 @@ page.open(url, function(status) {
             	var colorArr = new Array();
             	var elemIndex = 0;
             	
-            	var wrapperNodeArr = new Array();
+            	var labeledNodeArr = new Array();
+            	var labeledNodeArrIndex = 0;
             	
             	var getPosition = function(elt) {
                 	//a top-down recursion was not convenient as several nested elements have same offsetParent
@@ -66,6 +72,13 @@ page.open(url, function(status) {
             	//remove function arguments x, y later as position now is being calculated bottom-up
                 var getTreeDepthAndLocalFeatures = function(root, x, y) {
                 	console.log("");
+                	
+                	for (var i = 0; i < labeledNodeArrIndex; i++) {
+                		if (equals(labeledNodeArr[i].node, root)) {
+                			console.log("labeled: " + labeledNodeArr[i].label);
+                			break;
+                		}
+                	}
                 	
                 	var bgcolor = "", border = "", margin = "",	padding = "";
 		        	if (typeof root.style !== "undefined") {
@@ -254,7 +267,8 @@ page.open(url, function(status) {
                 		}
                 	}
                 }
-                
+                                
+                /* largely from mmdDomHelper.js */
                 var defVars = {};
                 var doc = document;
                 var currentMMDField;
@@ -335,7 +349,8 @@ page.open(url, function(status) {
                     if (xpathString != null && xpathString.length > 0 && contextNode != null && fieldParserKey == null) {
                          var node = getScalarWithXPath(contextNode, xpathString);
                          stringValue = node.stringValue;
-                        console.log("node: " + node + " label: " + mmdScalarField.name + " value: " + stringValue + " xpath: " + xpathString);
+                         labeledNodeArr[labeledNodeArrIndex++] = {node:node, label:mmdScalarField.name, value:stringValue};
+                         console.log("node: " + node + " label: " + mmdScalarField.name + " value: " + stringValue + " xpath: " + xpathString);
                     } else if (fieldParserKey != null) {
                         stringValue = getFieldParserValueByKey(fieldParserContext, fieldParserKey);
                     }
@@ -788,6 +803,41 @@ page.open(url, function(status) {
 
                 	    return metadata;
                 	});
+                }
+                
+                /* from util.js */
+                var equals = function(obj, x)
+                {
+                  for(var p in obj)
+                  {
+                      if (obj[p])
+                      {
+                      	if(x[p])
+                      	{
+                          switch(typeof(obj[p])) {
+                              case 'object':
+                                  if (!this.equals(obj[p], x[p])) { return false; } break;
+                              case 'function':
+                                  if (typeof(x[p])=='undefined' ||
+                                      (p != 'equals' && obj[p].toString() != x[p].toString()))
+                                      return false;
+                                  break;
+                              default:
+                                  if (obj[p] != x[p]) { return false; }
+                          }
+                        }
+                        else
+                        {
+                        	return false;
+                        }
+                      }
+                      else
+                      {
+                          if (x[p])
+                              return false;
+                      }
+                  }
+                  return true;
                 }
                 
                 getNodeCollectionFromMetaMetadata();
