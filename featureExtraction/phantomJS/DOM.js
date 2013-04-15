@@ -3,6 +3,8 @@
  * @author ajit
  */
 
+var fs = require('fs');
+
 var url = "http://www.amazon.com/Sennheiser-HD-280-Pro-Headphones/dp/B000065BPB/ref=sr_1_17?s=musical-instruments&ie=UTF8&qid=1362772852&sr=1-17";
 var serviceURL = "http://ecology-service.cse.tamu.edu/BigSemanticsService/mmd.json?url=" + encodeURIComponent(url);
 
@@ -11,6 +13,7 @@ var p = require('webpage').create();
 
 page.onConsoleMessage = function(msg) {
     console.log(msg);
+    fs.write("output.txt", msg, 'a');
 };
 
 p.onConsoleMessage = function(msg) {
