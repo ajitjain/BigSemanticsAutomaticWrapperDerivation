@@ -74,7 +74,7 @@ page.open(url, function(status) {
                 	console.log("");
                 	
                 	for (var i = 0; i < labeledNodeArrIndex; i++) {
-                		if (equals(labeledNodeArr[i].node, root)) {
+                		if (/*equals*/(labeledNodeArr[i].node === root)) {
                 			console.log("labeled: " + labeledNodeArr[i].label);
                 			break;
                 		}
@@ -347,10 +347,13 @@ page.open(url, function(status) {
                     var stringValue = null;
                     
                     if (xpathString != null && xpathString.length > 0 && contextNode != null && fieldParserKey == null) {
-                         var node = getScalarWithXPath(contextNode, xpathString);
-                         stringValue = node.stringValue;
-                         labeledNodeArr[labeledNodeArrIndex++] = {node:node, label:mmdScalarField.name, value:stringValue};
-                         console.log("node: " + node + " label: " + mmdScalarField.name + " value: " + stringValue + " xpath: " + xpathString);
+                         var node = getScalarWithXPath(contextNode, xpathString).singleNodeValue;
+                         if (node != null) {
+                        	 stringValue = node.textContent;
+                        	 labeledNodeArr[labeledNodeArrIndex++] = {node:node, label:mmdScalarField.name, value:stringValue};
+                             //print(node);
+                             console.log("node: " + node + " label: " + mmdScalarField.name + " value: " + stringValue + " xpath: " + xpathString);
+                         }                        
                     } else if (fieldParserKey != null) {
                         stringValue = getFieldParserValueByKey(fieldParserContext, fieldParserKey);
                     }
@@ -709,7 +712,7 @@ page.open(url, function(status) {
                 */
                 var getScalarWithXPath = function(contextNode, xpath)
                 {
-                    return doc.evaluate(xpath, contextNode, null, XPathResult.STRING_TYPE, null);
+                    return doc.evaluate(xpath, contextNode, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
                 }
 
                 /**
@@ -816,7 +819,7 @@ page.open(url, function(status) {
                       	{
                           switch(typeof(obj[p])) {
                               case 'object':
-                                  if (!this.equals(obj[p], x[p])) { return false; } break;
+                                  if (!equals(obj[p], x[p])) { return false; } break;
                               case 'function':
                                   if (typeof(x[p])=='undefined' ||
                                       (p != 'equals' && obj[p].toString() != x[p].toString()))
@@ -838,6 +841,16 @@ page.open(url, function(status) {
                       }
                   }
                   return true;
+                }
+                
+                var print = function(obj) {
+                	var str = "{";
+        			for (prop in obj)
+        			{
+        				str += prop + ': ' + obj[prop] + ' ';
+        			}
+        			str += "}";
+        			console.log(str);
                 }
                 
                 getNodeCollectionFromMetaMetadata();
