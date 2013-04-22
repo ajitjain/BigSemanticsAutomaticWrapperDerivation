@@ -1,0 +1,16 @@
+http://www.newegg.com/PCs-Laptops/Store
+http://www.newegg.com/Ultrabooks/Category/ID-259
+http://www.newegg.com/Electronics/Store
+http://www.newegg.com/Cameras/Store
+http://www.newegg.com/Software/Store
+http://www.newegg.com/Gaming/Store
+http://www.newegg.com/Cell-Phones/Store/ID-140
+http://www.newegg.com/Auto/PromotionStore/ID-19
+http://www.newegg.com/Office-Products/Store/ID-133
+http://www.newegg.com/OutLet/PromotionStore/ID-80
+http://www.newegg.com/Computer-Hardware/Store
+http://www.newegg.com/Desktop-PCs/Category/ID-228
+http://www.newegg.com/Tablets/Category/ID-164
+http://www.newegg.com/Home-Audio-Speakers/SubCategory/ID-494
+http://www.newegg.com/Home-Theater-in-a-Box/SubCategory/ID-501
+http://www.newegg.com/PC-Games-Accessories/Category/ID-275
