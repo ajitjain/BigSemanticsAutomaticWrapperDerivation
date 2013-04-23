@@ -31,9 +31,12 @@ p.open(serviceURL, function(status) {
 	}
 });
 
-page.onCallback = function() {
-	return serviceResponse;
-}
+page.onCallback = function(arg) {
+	if (arg === 'mmd')
+		return serviceResponse;
+	if (arg === 'url')
+		return url;
+};
 
 /**
  * note: page.evaluate() is a sandboxed environment and thus requires function definitions to be present right there. 
@@ -41,24 +44,26 @@ page.onCallback = function() {
 page.open(url, function(status) {
     if ( status === "success" ) {
     	//page.includeJs("http://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js", function() {
-    		page.injectJs("mmdDomHelper.js");
-    		page.injectJs("util.js");
-    		page.injectJs("featureExtractor.js");
-            page.evaluate(function() {
-            	
-            	var getMmdFromService = function() {
-                	
-                	rawExtraction = false;
-                	var mmd = window.callPhantom();
-                	
-                	return mmd;
-                }
-                
-                var labeledNodes = getLabeledNodesFromMetaMetadata(getMmdFromService());
-                
-                addLabelsAndExtractFeatures(labeledNodes, document);
-            });
-            phantom.exit();
-        //});
+		page.injectJs("mmdDomHelper.js");
+		page.injectJs("util.js");
+		page.injectJs("featureExtractor.js");
+		page.injectJs("dynaContent.js");
+		
+		page.evaluate(function() {
+			var url = window.callPhantom('url');
+			
+			//if (performAction(url))
+				//waitForContent();
+			    				
+			var getMmdFromService = function() {
+               	rawExtraction = false;
+            	var mmd = window.callPhantom('mmd');
+            	return mmd;
+            }
+            
+			var labeledNodes = getLabeledNodesFromMetaMetadata(getMmdFromService());	                
+            addLabelsAndExtractFeatures(labeledNodes, document);
+		});
+        phantom.exit();
     }
 });
