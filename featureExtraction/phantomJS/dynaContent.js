@@ -12,14 +12,14 @@ var performAction = function(url) {
 		$('#item-guestreviews-link').click();
 		site = 'target';
 		return true;
-	} else if if (url.indexOf("www.walmart.com") >= 0) {
+	} else if (url.indexOf("www.walmart.com") >= 0) {
 		site = 'walmart';
 		return true;
 	} else {
 		site = '';
 		return false;
 	}
-}
+};
 
 var waitForContent = function(timeoutMillis) {
 	var timeout = timeoutMillis ? timeoutMillis : defaultTimeout;
@@ -48,4 +48,4 @@ var waitForContent = function(timeoutMillis) {
             clearInterval(interval); // stop interval 
         }
     }, defaultInterval);
-}
+};

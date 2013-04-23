@@ -44,16 +44,16 @@ page.onCallback = function(arg) {
 page.open(url, function(status) {
     if ( status === "success" ) {
     	//page.includeJs("http://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js", function() {
+    	page.injectJs("dynaContent.js");
 		page.injectJs("mmdDomHelper.js");
 		page.injectJs("util.js");
 		page.injectJs("featureExtractor.js");
-		page.injectJs("dynaContent.js");
 		
 		page.evaluate(function() {
 			var url = window.callPhantom('url');
 			
-			//if (performAction(url))
-				//waitForContent();
+			if (performAction(url))
+				waitForContent();
 			    				
 			var getMmdFromService = function() {
                	rawExtraction = false;

@@ -27,7 +27,7 @@
 			elt = elt.offsetParent;
 		}
 		return {left: x, top: y};
-	}            	
+	};            	
 	
 	//remove function arguments x, y later as position now is being calculated bottom-up
 	var getTreeDepthAndLocalFeatures = function(root, x, y) {
@@ -107,7 +107,7 @@
 			console.log("node: " + root.nodeName + " border: " + border);
 			console.log("node: " + root.nodeName + " margin: " + margin);
 			console.log("node: " + root.nodeName + " padding: " + padding);
-		}
+		};
 			                	
 		var pos = getPosition(root);
 	    console.log("node: " + root.nodeName + 
@@ -226,7 +226,7 @@
 									+ " bg: " + colorArr[j].bg + " fg: " + colorArr[j].fg);
 			}
 		}
-	}
+	};
 	
 	var addLabelsAndExtractFeatures = function(labeledNodes, document) {
 		
@@ -236,4 +236,4 @@
 				document.documentElement.offsetLeft, document.documentElement.offsetTop));
 		
 		calculateRelationalFeatures();
-	}
+	};

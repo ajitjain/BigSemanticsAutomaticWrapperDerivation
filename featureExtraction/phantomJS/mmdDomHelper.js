@@ -69,7 +69,7 @@
     	//console.log("Returning Metadata: ");
     	//console.info(metadata);
         return metadata;
-    }
+    };
 
     var extractScalar = function(mmdScalarField, contextNode, metadata, fieldParserContext) {
     	//console.log("extractScalar: " + mmdScalarField.name);
@@ -127,7 +127,7 @@
                		metadata[mmdScalarField.name] = mmdScalarField;
            }
         }
-    }
+    };
 
     var extractCollection = function(mmdCollectionField, contextNode, metadata, fieldParserContext) {
         //console.log("extractCollection: " + mmdCollectionField.name);
@@ -209,7 +209,7 @@
         }
 
         return true;
-    }
+    };
 
     var extractComposite = function(mmdCompositeField, contextNode, metadata, fieldParserContext)
     {
@@ -268,7 +268,7 @@
         }
 
         return true;
-    }
+    };
 
     var extractFieldParserHelperObject = function(mmdNestedField, contextNode, fieldParserContext, fieldType) {
         var fieldParserHelper = { };
@@ -332,7 +332,7 @@
         if (fieldParserHelper.node == null && fieldParserHelper.nodeList == null && fieldParserHelper.fieldParserContext == null && fieldParserHelper.fieldParserContextList == null)
             return null;
         return fieldParserHelper;
-    }
+    };
 
     var getFieldParserValueByKey = function(fieldParserContext, fieldParserKey) {
         var pos = fieldParserKey.indexOf('|');
@@ -343,7 +343,7 @@
             if (fieldParserContext.hasOwnProperty(key))
                 return fieldParserContext[key];
         return null;
-    }
+    };
 
     var parseNodeListAsHypertext = function(mmdCollectionField, paras, metadata) {
 
@@ -369,7 +369,7 @@
 //                    console.info(parsedParas);
 
         metadata[mmdCollectionField.name] = parsedParas;
-    }
+    };
 
     var parseHypertextParaFromNode = function(hypertextNode) {
 
@@ -436,7 +436,7 @@
                 runs.push(resNode);
         }
         return hypertextPara;
-    }
+    };
 
     // Util functions, to make the above functions a little prettier
 
@@ -445,7 +445,7 @@
             if (obj.hasOwnProperty(propName))
                 return false;
         return true;
-    }
+    };
 
     /**
     * All scalars can be considered strings. Type holds no value in javascript (yet).
@@ -453,7 +453,7 @@
     var getScalarWithXPath = function(contextNode, xpath)
     {
         return doc.evaluate(xpath, contextNode, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
-    }
+    };
 
     /**
     * Uses getNodeListWithXPath, but verifies and returns only the first value.
@@ -466,12 +466,12 @@
         else
             return nodelist.snapshotItem(0);
         
-    }
+    };
 
     var getNodeListWithXPath = function(contextNode, xpath) {
         return doc.evaluate(xpath, contextNode, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
 
-    }
+    };
 
     var clone = function(obj){
         if(obj == null || typeof(obj) != 'object')
@@ -482,7 +482,7 @@
         for(var key in obj)
             temp[key] = clone(obj[key]);
         return temp;
-    }
+    };
 
     var getMMDField = function(mmd, fieldName) {
     	for(i in mmd.kids) {
@@ -492,7 +492,7 @@
              		return mmdField.scalar;
             }		
     	}
-    }
+    };
 
     var getLabeledNodesFromMetaMetadata = function(response) {
     	//getMmdFromService(function(response) {
@@ -546,4 +546,4 @@
 
     	    return labeledNodeArr; //metadata;
     	//});
-    }
+    };

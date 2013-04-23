@@ -35,7 +35,7 @@ var equals = function(obj, x)
       }
   }
   return true;
-}
+};
 
 var print = function(obj) {
 	var str = "{";
@@ -45,4 +45,4 @@ var print = function(obj) {
 	}
 	str += "}";
 	console.log(str);
-}
+};
