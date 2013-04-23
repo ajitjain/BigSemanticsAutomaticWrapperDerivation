@@ -33,10 +33,12 @@
 	var getTreeDepthAndLocalFeatures = function(root, x, y) {
 		console.log("");
 		
-		for (var i = 0; i < labeledNodeArr.length; i++) {
-			if (/*equals*/(labeledNodeArr[i].node === root)) {
-				console.log("labeled: " + labeledNodeArr[i].label);
-				break;
+		if (labeledNodeArr instanceof Array) {
+			for (var i = 0; i < labeledNodeArr.length; i++) {
+				if (/*equals*/(labeledNodeArr[i].node === root)) {
+					console.log("labeled: " + labeledNodeArr[i].label);
+					break;
+				}
 			}
 		}
 		

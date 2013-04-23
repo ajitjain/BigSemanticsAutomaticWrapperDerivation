@@ -2,7 +2,7 @@
  * @author
  */
 
-var site;
+var site = '';
 
 var defaultInterval = 250; //millis
 var defaultTimeout = 4000; //millis
