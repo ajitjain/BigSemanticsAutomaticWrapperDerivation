@@ -1,3 +1,7 @@
+# @author: Sanjeev Kumar Singh
+# @Created on: 23rd April, 2013
+
+
 import httplib
 import urlparse
 import bs4
@@ -64,7 +68,11 @@ class WebCrawler:
     
     '''main function'''
     def main(self, file_list):
-        finalListOfUrls = []
+        finalListOfUrls_target = []
+        finalListOfUrls_walmart = []
+        finalListOfUrls_amazon = []
+        finalListOfUrls_newegg = []
+        
         for file in file_list:
             fr = open(file, 'rb')
             urls = fr.readlines()
@@ -76,36 +84,52 @@ class WebCrawler:
                 htmlText = self.getHtmlContent(final_url)
                 hrefs = self.getHrefs(htmlText)
                 hrefs = [x for x in hrefs if x is not None]
-                filteredHrefs = []
+                
                 if file == 'newegg.txt':   
                     for href in hrefs:
                         if href.startswith('http://www.newegg.com/Product/Product.aspx?Item='):
-                            filteredHrefs.append(href)
+                            finalListOfUrls_newegg.append(href)
                 elif file == 'amazon.txt':
                     for href in hrefs:
                         if href.endswith('keywords=samsung') and href.startswith('http://www.amazon.com/'):
-                            filteredHrefs.append(href)
+                            finalListOfUrls_amazon.append(href)
                 elif file == 'target.txt':
                     for href in hrefs:
                         if href.startswith('http://www.target.com/') and 'prodSlot=medium' in href:
-                            filteredHrefs.append(href)
+                            finalListOfUrls_target.append(href)
                 elif file == 'walmart.txt':
                     for href in hrefs:
-                        if href.startswith('http://www.walmart.com/ip'):
-                            filteredHrefs.append(href)
+                        if '/ip/' in href:
+                            temp_href = 'http://www.walmart.com' + href
+                            finalListOfUrls_walmart.append(temp_href)
+                else:
+                    print 'input file is missing!'
                     
-                #print len(filteredHrefs)
-                filteredHrefs = list(set(filteredHrefs))
-                finalListOfUrls.extend(filteredHrefs)
+        finalListOfUrls_target = list(set(finalListOfUrls_target))
+        finalListOfUrls_walmart = list(set(finalListOfUrls_walmart))
+        finalListOfUrls_amazon = list(set(finalListOfUrls_amazon))
+        finalListOfUrls_newegg = list(set(finalListOfUrls_newegg))
         
         f = open('output.txt', 'wb')
-        finalListOfUrls = list(set(finalListOfUrls))
-        #print len(finalListOfUrls)
-        for href in finalListOfUrls:
-            href = href.strip()
-            f.write(href + '\n')
+        for index in range(250):
+            finalListOfUrls_target[index] = finalListOfUrls_target[index].strip()
+            f.write(finalListOfUrls_target[index] + '\n')
+            
+            finalListOfUrls_walmart[index] = finalListOfUrls_walmart[index].strip()
+            f.write(finalListOfUrls_walmart[index] + '\n')
+            
+            finalListOfUrls_amazon[index] = finalListOfUrls_amazon[index].strip()
+            f.write(finalListOfUrls_amazon[index] + '\n')
         
+        
+        f_dash = open('output2.txt', 'wb')
+        for index in range(250):
+            finalListOfUrls_newegg[index] = finalListOfUrls_newegg[index].strip()
+            f_dash.write(finalListOfUrls_newegg[index] + '\n')
+            
         f.close()
+        f_dash.close()
+        
         return
     
 if __name__ == '__main__':
