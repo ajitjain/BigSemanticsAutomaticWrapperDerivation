@@ -66,8 +66,7 @@ var main = function() {
 			 */
 			page.evaluate(function() {
 				var url = window.callPhantom('url');
-				console.log("url:::" + url);
-				
+								
 				if (performAction(url))
 					waitForContent();
 				    				
