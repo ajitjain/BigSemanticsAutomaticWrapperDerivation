@@ -5,8 +5,12 @@
 
 var index = 0;
 var url = new Array();
-url[index++] = "http://www.amazon.com/Sennheiser-HD-280-Pro-Headphones/dp/B000065BPB/ref=sr_1_17?s=musical-instruments&ie=UTF8&qid=1362772852&sr=1-17";
-url[index++] = "http://www.amazon.com/Samsung-Galaxy-Screen-Protector-GTP7510/dp/B005593W10/ref=sr_1_7?s=pc&ie=UTF8&qid=1366776462&sr=1-7";
+url[index++] = "http://www.amazon.com/DigitalsOnDemand-15-Item-Accessory-Bundle-Samsung/dp/B0088JR6WU/ref=sr_1_10?s=pc&ie=UTF8&qid=1366776461&sr=1-10";
+//url[index++] = "http://www.amazon.com/Rotating-Samsung-Multi-angle-Sheath-Protector/dp/B00BKNPD1W/ref=sr_1_7?s=pc&ie=UTF8&qid=1366776461&sr=1-7";
+//url[index++] = "http://www.amazon.com/CrazyOnDigital-Leather-Charger-Protector-Samsung/dp/B0083XTNJK/ref=sr_1_12?s=pc&ie=UTF8&qid=1366776461&sr=1-12";
+//url[index++] = "http://www.amazon.com/ArmorSuit-MilitaryShield-Protector-Lifetime-Replacements/dp/B00CA9I3LC/ref=sr_1_8?s=pc&ie=UTF8&qid=1366776459&sr=1-8";
+//url[index++] = "http://www.amazon.com/Sennheiser-HD-280-Pro-Headphones/dp/B000065BPB/ref=sr_1_17?s=musical-instruments&ie=UTF8&qid=1362772852&sr=1-17";
+//url[index++] = "http://www.amazon.com/Samsung-Galaxy-Screen-Protector-GTP7510/dp/B005593W10/ref=sr_1_7?s=pc&ie=UTF8&qid=1366776462&sr=1-7";
 
 var fin = require('fs');
 var instream = fin.open("../../crawler/output1.txt", "r");

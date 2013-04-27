@@ -27,7 +27,7 @@
 	};            	
 	 
 	var getTreeDepthAndLocalFeatures = function(root) {
-		//console.log("");
+//		console.log("");
 		var nodeObj = new Object();
 		nodeObj.node = root;
 		
@@ -53,6 +53,9 @@
 		};
 			                	
 		var pos = getPosition(root);
+		
+		nodeObj.x = pos.left; nodeObj.y = pos.top; nodeObj.w = root.offsetWidth; nodeObj.h = root.offsetHeight;
+    	nodeObj.bg = bgcolor;
 //	    console.log("node: " + root.nodeName + 
 //	    					" x: " + pos.left + " y: " + pos.top + " w: " + root.offsetWidth + " h: " + root.offsetHeight);
 	    
@@ -66,9 +69,6 @@
 	    		 nodeName !== "strong" && nodeName !== "pre" && 
 	    		 nodeName !== "span")) { //restore span?
 	    	bAddForRelationalFeatures = true;
-	        
-	    	nodeObj.x = pos.left; nodeObj.y = pos.top; nodeObj.w = root.offsetWidth; nodeObj.h = root.offsetHeight;
-	    	nodeObj.bg = bgcolor;
 	    }
 	
 	    var children = root.childNodes;
@@ -97,18 +97,16 @@
 		            	nodeObj.cRating = (trimTxt.search("rating") >= 0 || trimTxt.search("Rating") >= 0);
 		            	nodeObj.cReview = (trimTxt.search("review") >= 0 || trimTxt.search("Review") >= 0);		            	
 		            	nodeObj.fontsize = fontsize;
-	//	            	console.log("	text node: " + root.nodeName + " text: " + text + 
-	//	            													" fontSize: " + fontsize + " color: " + color);
+//		            	console.log("	text node: " + root.nodeName + " text: " + text + 
+//            													" fontSize: " + fontsize + " color: " + color);
 		            	
 		            	//later make the variable false to avoid unnecessary overwrites of same information?
-		            	if (bAddForRelationalFeatures)
+		            	//if (bAddForRelationalFeatures)
 		            		nodeObj.fg = color;
 		            }
 	            }
 	        }
 	    }
-	    if (bAddForRelationalFeatures) 
-	    	nodeArr[elemIndex++] = nodeObj;
 	    
 	    var treeDepth = 0;
 	    nodeObj.height = 0;
@@ -123,6 +121,13 @@
 	                nodeObj.height = currdepth;
 	        	}
 	        }
+	    }
+	    
+	    if (bAddForRelationalFeatures) 
+	    	nodeArr[elemIndex++] = nodeObj;
+	    else {
+	    	var str = featureStr(nodeObj);
+	    	output(nodeObj, str);
 	    }
 	    	
 	    return treeDepth;
@@ -140,69 +145,6 @@
 		for (var i = 0; i < len; i++) {
 			
 			//phase 2 of local features extraction
-			var root = nodeArr[i].node;			
-			var borderObj = "", marginObj = "",	paddingObj = "";
-			borderObj = root.style.border;
-			if (borderObj === "" /*&& window.getComputedStyle*/) {
-				borderObj = new Object();
-				borderObj.topwidth = document.defaultView.getComputedStyle(root,null).getPropertyValue('border-top-width');
-				borderObj.bottomwidth = document.defaultView.getComputedStyle(root,null).getPropertyValue('border-bottom-width');
-				borderObj.leftwidth = document.defaultView.getComputedStyle(root,null).getPropertyValue('border-left-width');
-				borderObj.rightwidth = document.defaultView.getComputedStyle(root,null).getPropertyValue('border-right-width');
-				borderObj.topcolor = document.defaultView.getComputedStyle(root,null).getPropertyValue('border-top-color');
-				borderObj.bottomcolor = document.defaultView.getComputedStyle(root,null).getPropertyValue('border-bottom-color');
-				borderObj.leftcolor = document.defaultView.getComputedStyle(root,null).getPropertyValue('border-left-color');
-				borderObj.rightcolor = document.defaultView.getComputedStyle(root,null).getPropertyValue('border-right-color');
-				borderObj.topstyle = document.defaultView.getComputedStyle(root,null).getPropertyValue('border-top-style');
-				borderObj.bottomstyle = document.defaultView.getComputedStyle(root,null).getPropertyValue('border-bottom-style');
-				borderObj.leftstyle = document.defaultView.getComputedStyle(root,null).getPropertyValue('border-left-style');
-				borderObj.rightstyle = document.defaultView.getComputedStyle(root,null).getPropertyValue('border-right-style');
-				
-//				border = "{";
-//				for (prop in borderObj)
-//				{
-//					border += prop + ': ' + borderObj[prop] + ' ';
-//				}
-//				border += "}";
-			}
-			
-			marginObj = root.style.margin;
-			if (marginObj === "" /*&& window.getComputedStyle*/) {
-				marginObj = new Object();
-				marginObj.top = document.defaultView.getComputedStyle(root,null).getPropertyValue('margin-top');
-				marginObj.bottom = document.defaultView.getComputedStyle(root,null).getPropertyValue('margin-bottom');
-				marginObj.left = document.defaultView.getComputedStyle(root,null).getPropertyValue('margin-left');
-				marginObj.right = document.defaultView.getComputedStyle(root,null).getPropertyValue('margin-right');
-				
-//				margin = "{";
-//				for (prop in marginObj)
-//				{
-//					margin += prop + ': ' + marginObj[prop] + ' ';
-//				}
-//				margin += "}";
-			}
-			
-			paddingObj = root.style.padding;
-			if (paddingObj === "" /*&& window.getComputedStyle*/) {
-				paddingObj = new Object();
-				paddingObj.top = document.defaultView.getComputedStyle(root,null).getPropertyValue('padding-top');
-				paddingObj.bottom = document.defaultView.getComputedStyle(root,null).getPropertyValue('padding-bottom');
-				paddingObj.left = document.defaultView.getComputedStyle(root,null).getPropertyValue('padding-left');
-				paddingObj.right = document.defaultView.getComputedStyle(root,null).getPropertyValue('padding-right');
-				
-//				padding = "{";
-//				for (prop in paddingObj)
-//				{
-//					padding += prop + ': ' + paddingObj[prop] + ' ';
-//				}
-//				padding += "}";
-			}
-			
-//			console.log("node: " + root.nodeName + " bgcolor: " + bgcolor);
-//			console.log("node: " + root.nodeName + " border: " + border);
-//			console.log("node: " + root.nodeName + " margin: " + margin);
-//			console.log("node: " + root.nodeName + " padding: " + padding);
-			
 			var relx = 0, rely = 0, relw = 0, relh = 0, relr = 0, relg = 0, relb = 0, relfr = 0, relfg = 0, relfb = 0;
 			for (var j = (i+1); j < len; j++) {
 				//don't consider container relationships
@@ -265,64 +207,7 @@
 //									+ " bg: " + colorArr[j].bg + " fg: " + colorArr[j].fg);
 			}
 			
-			var outputStr = "label:" + nodeArr[i].label + " id:";
-			
-			var rgb = nodeArr[i].bg.match(/(\d+)/g);
-			var str = "";
-			if (rgb[0] !== 0 || rgb[1] !== 0 || rgb[2] !== 0 || rgb[3] === undefined || rgb[3] !== 0) {
-				str = " bgr:" + rgb[0] + " bgg:" + rgb[1] + " bgb:" + rgb[2];
-			}
-			
-			if (nodeArr[i].fg !== undefined) {
-				rgb = nodeArr[i].fg.match(/(\d+)/g);
-				str += " fgr:" + rgb[0] + " fgg:" + rgb[1] + " fgb:" + rgb[2];
-			}
-			
-			str += " x:" + nodeArr[i].x + " y:" + nodeArr[i].y + " w:" + nodeArr[i].w + " h:" + nodeArr[i].h;
-			
-			if (borderObj.leftwidth !== '0px' || borderObj.rightwidth !== '0px' || 
-				borderObj.topwidth !== '0px' || borderObj.bottomwidth !== '0px') {
-				str += " blw:" + borderObj.leftwidth + " brw:" + borderObj.rightwidth 
-					+ " btw:" + borderObj.topwidth + " bbw:" + borderObj.bottomwidth;
-			}
-
-			if (borderObj.leftcolor != undefined) {
-				rgb = borderObj.leftcolor.match(/(\d+)/g);
-				str += " blcr:" + rgb[0] + " blcg:" + rgb[1] + " blcb:" + rgb[2];
-			}
-			if (borderObj.rightcolor != undefined) { 
-				rgb = borderObj.rightcolor.match(/(\d+)/g);
-				str += " brcr:" + rgb[0] + " brcg:" + rgb[1] + " brcb:" + rgb[2];
-			}
-			if (borderObj.topcolor != undefined) {
-				rgb = borderObj.topcolor.match(/(\d+)/g);
-				str += " btcr:" + rgb[0] + " btcg:" + rgb[1] + " btcb:" + rgb[2];
-			}
-			if (borderObj.bottomcolor != undefined) {
-				rgb = borderObj.bottomcolor.match(/(\d+)/g);
-				str += " bbcr:" + rgb[0] + " bbcg:" + rgb[1] + " bbcb:" + rgb[2];
-			}
-			
-			if (borderObj.leftstyle !== 'none' || borderObj.rightstyle !== 'none' || 
-					borderObj.topstyle !== 'none' || borderObj.bottomstyle !== 'none') {
-				str += " bls:" + borderObj.leftstyle + " brs:" + borderObj.rightstyle 
-					+ " bts:" + borderObj.topstyle + " bbs:" + borderObj.bottomstyle;
-			}
-			
-			if (marginObj.left !== '0px' || marginObj.right !== '0px' || marginObj.top !== '0px' || marginObj.bottom !== '0px') {
-				str += " ml:" + marginObj.left + " mr:" + marginObj.right + " mt:" + marginObj.top + " mb:" + marginObj.bottom;
-			}
-			
-			if (paddingObj.left !== '0px' || paddingObj.right !== '0px' || paddingObj.top !== '0px' || paddingObj.bottom !== '0px') {
-				str += " pl:" + paddingObj.left + " pr:" + paddingObj.right + " pt:" + paddingObj.top + " pb:" + paddingObj.bottom;
-			}
-			
-			str += " height:" + nodeArr[i].height;
-			
-			if (nodeArr[i].fontsize !== undefined) {
-				str += " font:" + nodeArr[i].fontsize + " wordcnt:" + nodeArr[i].wc
-					+ " cPrice:" + nodeArr[i].cPrice + " cRating:" + nodeArr[i].cRating + " cReview:" + nodeArr[i].cReview;
-			}
+			var str = featureStr(nodeArr[i]);
 			
 			if (relx > 0) str += " relx:" + relx;
 			if (rely > 0) str += " rely:" + rely;
@@ -335,13 +220,141 @@
 			if (relfg > 0) str += " relfg:" + relfg;
 			if (relfb > 0) str += " relfb:" + relfb;
 			
-			outputStr += str;
-			console.log(outputStr);
+			output(nodeArr[i], str);
+		}
+	};
+	
+	var featureStr = function(node) {
+		var str = "";
+		
+		var rgb = node.bg.match(/(\d+)/g);
+		if (rgb[0] !== 0 || rgb[1] !== 0 || rgb[2] !== 0 || rgb[3] === undefined || rgb[3] !== 0) {
+			str = " bgr:" + rgb[0] + " bgg:" + rgb[1] + " bgb:" + rgb[2];
+		}
+		
+		if (node.fg !== undefined) {
+			rgb = node.fg.match(/(\d+)/g);
+			str += " fgr:" + rgb[0] + " fgg:" + rgb[1] + " fgb:" + rgb[2];
+		}
+		
+		str += " x:" + node.x + " y:" + node.y + " w:" + node.w + " h:" + node.h;
+		
+		var borderObj = "", marginObj = "",	paddingObj = "";
+		var root = node.node;
+		borderObj = root.style.border;
+		if (borderObj === "" /*&& window.getComputedStyle*/) {
+			borderObj = new Object();
+			borderObj.topwidth = document.defaultView.getComputedStyle(root,null).getPropertyValue('border-top-width');
+			borderObj.bottomwidth = document.defaultView.getComputedStyle(root,null).getPropertyValue('border-bottom-width');
+			borderObj.leftwidth = document.defaultView.getComputedStyle(root,null).getPropertyValue('border-left-width');
+			borderObj.rightwidth = document.defaultView.getComputedStyle(root,null).getPropertyValue('border-right-width');
+			borderObj.topcolor = document.defaultView.getComputedStyle(root,null).getPropertyValue('border-top-color');
+			borderObj.bottomcolor = document.defaultView.getComputedStyle(root,null).getPropertyValue('border-bottom-color');
+			borderObj.leftcolor = document.defaultView.getComputedStyle(root,null).getPropertyValue('border-left-color');
+			borderObj.rightcolor = document.defaultView.getComputedStyle(root,null).getPropertyValue('border-right-color');
+			borderObj.topstyle = document.defaultView.getComputedStyle(root,null).getPropertyValue('border-top-style');
+			borderObj.bottomstyle = document.defaultView.getComputedStyle(root,null).getPropertyValue('border-bottom-style');
+			borderObj.leftstyle = document.defaultView.getComputedStyle(root,null).getPropertyValue('border-left-style');
+			borderObj.rightstyle = document.defaultView.getComputedStyle(root,null).getPropertyValue('border-right-style');
 			
-			if (nodeArr[i].label !== undefined) {
-				var grmmStr = "grmm:" + nodeArr[i].label + " ----" + str;
-				console.log(grmmStr);
-			}
+//			border = "{";
+//			for (prop in borderObj)
+//			{
+//				border += prop + ': ' + borderObj[prop] + ' ';
+//			}
+//			border += "}";
+		}
+		
+		marginObj = root.style.margin;
+		if (marginObj === "" /*&& window.getComputedStyle*/) {
+			marginObj = new Object();
+			marginObj.top = document.defaultView.getComputedStyle(root,null).getPropertyValue('margin-top');
+			marginObj.bottom = document.defaultView.getComputedStyle(root,null).getPropertyValue('margin-bottom');
+			marginObj.left = document.defaultView.getComputedStyle(root,null).getPropertyValue('margin-left');
+			marginObj.right = document.defaultView.getComputedStyle(root,null).getPropertyValue('margin-right');
+			
+//			margin = "{";
+//			for (prop in marginObj)
+//			{
+//				margin += prop + ': ' + marginObj[prop] + ' ';
+//			}
+//			margin += "}";
+		}
+		
+		paddingObj = root.style.padding;
+		if (paddingObj === "" /*&& window.getComputedStyle*/) {
+			paddingObj = new Object();
+			paddingObj.top = document.defaultView.getComputedStyle(root,null).getPropertyValue('padding-top');
+			paddingObj.bottom = document.defaultView.getComputedStyle(root,null).getPropertyValue('padding-bottom');
+			paddingObj.left = document.defaultView.getComputedStyle(root,null).getPropertyValue('padding-left');
+			paddingObj.right = document.defaultView.getComputedStyle(root,null).getPropertyValue('padding-right');
+			
+//			padding = "{";
+//			for (prop in paddingObj)
+//			{
+//				padding += prop + ': ' + paddingObj[prop] + ' ';
+//			}
+//			padding += "}";
+		}
+		
+//		console.log("node: " + root.nodeName + " bgcolor: " + bgcolor);
+//		console.log("node: " + root.nodeName + " border: " + border);
+//		console.log("node: " + root.nodeName + " margin: " + margin);
+//		console.log("node: " + root.nodeName + " padding: " + padding);
+				
+		if (borderObj.leftwidth !== '0px' || borderObj.rightwidth !== '0px' || 
+			borderObj.topwidth !== '0px' || borderObj.bottomwidth !== '0px') {
+			str += " blw:" + borderObj.leftwidth + " brw:" + borderObj.rightwidth 
+				+ " btw:" + borderObj.topwidth + " bbw:" + borderObj.bottomwidth;
+		}
+
+		if (borderObj.leftcolor != undefined) {
+			rgb = borderObj.leftcolor.match(/(\d+)/g);
+			str += " blcr:" + rgb[0] + " blcg:" + rgb[1] + " blcb:" + rgb[2];
+		}
+		if (borderObj.rightcolor != undefined) { 
+			rgb = borderObj.rightcolor.match(/(\d+)/g);
+			str += " brcr:" + rgb[0] + " brcg:" + rgb[1] + " brcb:" + rgb[2];
+		}
+		if (borderObj.topcolor != undefined) {
+			rgb = borderObj.topcolor.match(/(\d+)/g);
+			str += " btcr:" + rgb[0] + " btcg:" + rgb[1] + " btcb:" + rgb[2];
+		}
+		if (borderObj.bottomcolor != undefined) {
+			rgb = borderObj.bottomcolor.match(/(\d+)/g);
+			str += " bbcr:" + rgb[0] + " bbcg:" + rgb[1] + " bbcb:" + rgb[2];
+		}
+		
+		if (borderObj.leftstyle !== 'none' || borderObj.rightstyle !== 'none' || 
+				borderObj.topstyle !== 'none' || borderObj.bottomstyle !== 'none') {
+			str += " bls:" + borderObj.leftstyle + " brs:" + borderObj.rightstyle 
+				+ " bts:" + borderObj.topstyle + " bbs:" + borderObj.bottomstyle;
+		}
+		
+		if (marginObj.left !== '0px' || marginObj.right !== '0px' || marginObj.top !== '0px' || marginObj.bottom !== '0px') {
+			str += " ml:" + marginObj.left + " mr:" + marginObj.right + " mt:" + marginObj.top + " mb:" + marginObj.bottom;
+		}
+		
+		if (paddingObj.left !== '0px' || paddingObj.right !== '0px' || paddingObj.top !== '0px' || paddingObj.bottom !== '0px') {
+			str += " pl:" + paddingObj.left + " pr:" + paddingObj.right + " pt:" + paddingObj.top + " pb:" + paddingObj.bottom;
+		}
+		
+		str += " height:" + node.height;
+		
+		if (node.fontsize !== undefined) {
+			str += " font:" + node.fontsize + " wordcnt:" + node.wc
+				+ " cPrice:" + node.cPrice + " cRating:" + node.cRating + " cReview:" + node.cReview;
+		}
+		return str;
+	};
+	
+	var output = function(node, str) {
+		var outputStr = "label:" + node.label + " id:" + str;
+		console.log(outputStr);
+		
+		if (node.label !== undefined) {
+			var grmmStr = "grmm:" + node.label + " ----" + str;
+			console.log(grmmStr);
 		}
 	};
 	
