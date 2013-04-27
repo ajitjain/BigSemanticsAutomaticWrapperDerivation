@@ -497,7 +497,7 @@
     var getLabeledNodesFromMetaMetadata = function(response) {
     	//getMmdFromService(function(response) {
     		var metadata = {};
-    		console.log(response);
+    		//console.log(response);
     		var obj = eval("(" + response + ")");
     		var mmd = obj.meta_metadata;
     		if(mmd.parser == "xpath")

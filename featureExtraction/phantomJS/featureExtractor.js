@@ -32,7 +32,6 @@
 		nodeObj.node = root;
 		
 		//if only labeled nodes should be extracted move this block out to caller or make it an outer block
-		var label = "";
 		if (labeledNodeArr instanceof Array) {
 			for (var i = 0; i < labeledNodeArr.length; i++) {
 				if (/*equals*/(labeledNodeArr[i].node === root)) {
@@ -63,8 +62,9 @@
 	    var bAddForRelationalFeatures = false;
 	    var nodeName = root.nodeName.toLowerCase();
 	    if ((root.offsetWidth != 0 || root.offsetHeight != 0) && 
-	    		(nodeName !== "html" && nodeName !== "body" && nodeName !== "strong" && nodeName !== "span"
-	    			&& nodeName !== "pre")) { //restore span?
+	    		(nodeName !== "html" && nodeName !== "body" && 
+	    		 nodeName !== "strong" && nodeName !== "pre" && 
+	    		 nodeName !== "span")) { //restore span?
 	    	bAddForRelationalFeatures = true;
 	        
 	    	nodeObj.x = pos.left; nodeObj.y = pos.top; nodeObj.w = root.offsetWidth; nodeObj.h = root.offsetHeight;
@@ -79,23 +79,31 @@
 	    	//condition helps in keeping the parent nodeName (a, h2, etc.)
 	        if (children[i].childNodes.length === 0 && children[i].nodeType !== commentNodeType) {
 	           	var text = children[i].data;
-	            if (typeof text !== "undefined" && text.replace(/^\s+|\s+$/g, "").length > 0) {
-	            	var fontsize = root.style.fontSize;
-	            	if (fontsize === "" /*&& window.getComputedStyle*/) {
-	            		fontsize = document.defaultView.getComputedStyle(root,null).getPropertyValue('font-size');
-	            	}
-	            	
-	            	var color = root.style.color;
-	            	if (color === "" /*&& window.getComputedStyle*/) {
-	            		color = document.defaultView.getComputedStyle(root,null).getPropertyValue('color');
-	            	}
-	            	
-//	            	console.log("	text node: " + root.nodeName + " text: " + text + 
-//	            													" fontSize: " + fontsize + " color: " + color);
-	            	
-	            	//later make the variable false to avoid unnecessary overwrites of same information?
-	            	if (bAddForRelationalFeatures)
-	            		nodeObj.fg = color;
+	            if (typeof text !== "undefined") {
+	            	var trimTxt = text.replace(/^\s+|\s+$/g, "");
+	            	if (trimTxt.length > 0) {
+		            	var fontsize = root.style.fontSize;
+		            	if (fontsize === "" /*&& window.getComputedStyle*/) {
+		            		fontsize = document.defaultView.getComputedStyle(root,null).getPropertyValue('font-size');
+		            	}
+		            	
+		            	var color = root.style.color;
+		            	if (color === "" /*&& window.getComputedStyle*/) {
+		            		color = document.defaultView.getComputedStyle(root,null).getPropertyValue('color');
+		            	}
+		            	
+		            	nodeObj.wc = trimTxt.match(/[^\s]+/g).length;
+		            	nodeObj.cPrice = (trimTxt.search("price") >= 0 || trimTxt.search("Price") >= 0);
+		            	nodeObj.cRating = (trimTxt.search("rating") >= 0 || trimTxt.search("Rating") >= 0);
+		            	nodeObj.cReview = (trimTxt.search("review") >= 0 || trimTxt.search("Review") >= 0);		            	
+		            	nodeObj.fontsize = fontsize;
+	//	            	console.log("	text node: " + root.nodeName + " text: " + text + 
+	//	            													" fontSize: " + fontsize + " color: " + color);
+		            	
+		            	//later make the variable false to avoid unnecessary overwrites of same information?
+		            	if (bAddForRelationalFeatures)
+		            		nodeObj.fg = color;
+		            }
 	            }
 	        }
 	    }
@@ -111,10 +119,13 @@
 	                if (currdepth > treeDepth) {
 	                  	treeDepth = currdepth;
 	                }
-	                nodeObj.depth = currdepth;
+	                nodeObj.height = currdepth;
 	        	}
 	        }
 	    }
+	    else
+	    	nodeObj.height = 0;
+	    	
 	    return treeDepth;
 	};
 	
@@ -193,6 +204,7 @@
 //			console.log("node: " + root.nodeName + " margin: " + margin);
 //			console.log("node: " + root.nodeName + " padding: " + padding);
 			
+			var relx = 0, rely = 0, relw = 0, relh = 0, relr = 0, relg = 0, relb = 0, relfr = 0, relfg = 0, relfb = 0;
 			for (var j = (i+1); j < len; j++) {
 				//don't consider container relationships
 				//other direction needed as html tag violates top-down dimension values
@@ -219,12 +231,28 @@
 						Math.abs(rgb1[2] - rgb2[2]) >= COLOR_THRESHOLD)
 					continue;
 				
+				var rgbA = "", rgbB = "";
 				if (typeof nodeArr[i].fg !== "undefined" && typeof nodeArr[j].fg !== "undefined") {
-					var rgbA = nodeArr[i].fg.match(/(\d+)/g);
-	    			var rgbB = nodeArr[i].fg.match(/(\d+)/g);
+					rgbA = nodeArr[i].fg.match(/(\d+)/g);
+	    			rgbB = nodeArr[i].fg.match(/(\d+)/g);
 	    			if (Math.abs(rgbA[0] - rgbB[0]) >= COLOR_THRESHOLD || Math.abs(rgbA[1] - rgbB[1]) >= COLOR_THRESHOLD || 
 	    					Math.abs(rgbA[2] - rgbB[2]) >= COLOR_THRESHOLD)
 	    				continue;
+				}
+				
+				// we are subtracting the diff from threshold to assign higher values to strongly related nodes 
+				relx += (POSITION_THRESHOLD - Math.abs(nodeArr[i].x - nodeArr[j].x));
+				rely += (POSITION_THRESHOLD - Math.abs(nodeArr[i].y - nodeArr[j].y));
+				relw += (POSITION_THRESHOLD - Math.abs(nodeArr[i].w - nodeArr[j].w));
+				relh += (POSITION_THRESHOLD - Math.abs(nodeArr[i].h - nodeArr[j].h));
+				relr += (COLOR_THRESHOLD - Math.abs(rgb1[0] - rgb2[0]));
+				relg += (COLOR_THRESHOLD - Math.abs(rgb1[1] - rgb2[1]));
+				relb += (COLOR_THRESHOLD - Math.abs(rgb1[2] - rgb2[2]));
+				
+				if (typeof nodeArr[i].fg !== "undefined" && typeof nodeArr[j].fg !== "undefined") {
+					relfr += (COLOR_THRESHOLD - Math.abs(rgbA[0] - rgbB[0]));
+					relfg += (COLOR_THRESHOLD - Math.abs(rgbA[1] - rgbB[1]));
+					relfb += (COLOR_THRESHOLD - Math.abs(rgbA[2] - rgbB[2]));
 				}
 				
 				//print, if related
@@ -236,6 +264,76 @@
 //				console.log("node " + nameArr[j] + " x: " + regionArr[j].x + " y: " + regionArr[j].y 
 //								+ " w: " + regionArr[j].w + " h: " + regionArr[j].h 
 //									+ " bg: " + colorArr[j].bg + " fg: " + colorArr[j].fg);
+			}
+			
+			var outputStr = "label:" + nodeArr[i].label + " id:";
+			
+			var rgb = nodeArr[i].bg.match(/(\d+)/g);
+			var str = "";
+			if (rgb[0] !== 0 || rgb[1] !== 0 || rgb[2] !== 0 || rgb[3] === undefined || rgb[3] !== 0) {
+				str = " bgr:" + rgb[0] + " bgg:" + rgb[1] + " bgb:" + rgb[2];
+			}
+			
+			if (nodeArr[i].fg !== undefined) {
+				rgb = nodeArr[i].fg.match(/(\d+)/g);
+				str += " fgr:" + rgb[0] + " fgg:" + rgb[1] + " fgb:" + rgb[2];
+			}
+			
+			str += " x:" + nodeArr[i].x + " y:" + nodeArr[i].y + " w:" + nodeArr[i].w + " h:" + nodeArr[i].h;
+			
+			if (borderObj.leftwidth !== '0px' || borderObj.rightwidth !== '0px' || 
+				borderObj.topwidth !== '0px' || borderObj.bottomwidth !== '0px') {
+				str += " blw:" + borderObj.leftwidth + " brw:" + borderObj.rightwidth 
+					+ " btw:" + borderObj.topwidth + " bbw:" + borderObj.bottomwidth;
+			}
+
+			if (borderObj.leftcolor != undefined) {
+				rgb = borderObj.leftcolor.match(/(\d+)/g);
+				str += " blcr:" + rgb[0] + " blcg:" + rgb[1] + " blcb:" + rgb[2];
+			}
+			if (borderObj.rightcolor != undefined) { 
+				rgb = borderObj.rightcolor.match(/(\d+)/g);
+				str += " brcr:" + rgb[0] + " brcg:" + rgb[1] + " brcb:" + rgb[2];
+			}
+			if (borderObj.topcolor != undefined) {
+				rgb = borderObj.topcolor.match(/(\d+)/g);
+				str += " btcr:" + rgb[0] + " btcg:" + rgb[1] + " btcb:" + rgb[2];
+			}
+			if (borderObj.bottomcolor != undefined) {
+				rgb = borderObj.bottomcolor.match(/(\d+)/g);
+				str += " bbcr:" + rgb[0] + " bbcg:" + rgb[1] + " bbcb:" + rgb[2];
+			}
+			
+			if (borderObj.leftstyle !== 'none' || borderObj.rightstyle !== 'none' || 
+					borderObj.topstyle !== 'none' || borderObj.bottomstyle !== 'none') {
+				str += " bls:" + borderObj.leftstyle + " brs:" + borderObj.rightstyle 
+					+ " bts:" + borderObj.topstyle + " bbs:" + borderObj.bottomstyle;
+			}
+			
+			if (marginObj.left !== '0px' || marginObj.right !== '0px' || marginObj.top !== '0px' || marginObj.bottom !== '0px') {
+				str += " ml:" + marginObj.left + " mr:" + marginObj.right + " mt:" + marginObj.top + " mb:" + marginObj.bottom;
+			}
+			
+			if (paddingObj.left !== '0px' || paddingObj.right !== '0px' || paddingObj.top !== '0px' || paddingObj.bottom !== '0px') {
+				str += " pl:" + paddingObj.left + " pr:" + paddingObj.right + " pt:" + paddingObj.top + " pb:" + paddingObj.bottom;
+			}
+			
+			str += " height:" + nodeArr[i].height;
+			
+			if (nodeArr[i].fontsize !== undefined) {
+				str += " font:" + nodeArr[i].fontsize + " wordcnt:" + nodeArr[i].wc
+					+ " cPrice:" + nodeArr[i].cPrice + " cRating:" + nodeArr[i].cRating + " cReview:" + nodeArr[i].cReview;
+			}
+			
+			str += " relx:" + relx + " rely:" + rely + " relw:" + relw + " relh:" + relh 
+				+ " relr:" + relr + " relg:" + relg + " relb:" + relb + " relfr:" + relfr + " relfg:" + relfg + " relfb:" + relfb;
+			
+			outputStr += str;
+			console.log(outputStr);
+			
+			if (nodeArr[i].label !== undefined) {
+				var grmmStr = "grmm:" + nodeArr[i].label + " ----" + str;
+				console.log(grmmStr);
 			}
 		}
 	};

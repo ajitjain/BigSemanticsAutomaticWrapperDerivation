@@ -6,6 +6,7 @@
 var index = 0;
 var url = new Array();
 url[index++] = "http://www.amazon.com/Sennheiser-HD-280-Pro-Headphones/dp/B000065BPB/ref=sr_1_17?s=musical-instruments&ie=UTF8&qid=1362772852&sr=1-17";
+url[index++] = "http://www.amazon.com/Samsung-Galaxy-Screen-Protector-GTP7510/dp/B005593W10/ref=sr_1_7?s=pc&ie=UTF8&qid=1366776462&sr=1-7";
 
 var fin = require('fs');
 var instream = fin.open("../../crawler/output1.txt", "r");
@@ -15,14 +16,20 @@ while (!instream.atEnd())
 
 var fs = require('fs');
 fs.write("output.txt", '', 'w');	//remove this when features are to be obtained from multiple pages
+fs.write("grmmInput.txt", '', 'w');
 
 var page = require('webpage').create();
 var p = require('webpage').create();
 
 page.onConsoleMessage = function(msg) {
     console.log(msg);
-    fs.write("output.txt", msg, 'a');
-    fs.write("output.txt", '\n', 'a');
+    if (msg.substring(0,5) === 'grmm:') {
+    	fs.write("grmmInput.txt", msg.substring(5), 'a');
+        fs.write("grmmInput.txt", '\n', 'a');
+    } else {
+    	fs.write("output.txt", msg, 'a');
+        fs.write("output.txt", '\n', 'a');
+    }
 };
 
 p.onConsoleMessage = function(msg) {
@@ -48,8 +55,8 @@ var main = function() {
 	
 	p.open(serviceURL, function(status) {
 		if (status === "success") {
-		console.log("success");
-		serviceResponse = p.plainText;	
+			console.log("success");
+			serviceResponse = p.plainText;	
 		}
 	});
 	
