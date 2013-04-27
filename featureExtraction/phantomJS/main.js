@@ -5,6 +5,7 @@
 
 var index = 0;
 var url = new Array();
+url[index++] = "http://www.newegg.com/Product/Product.aspx?Item=9SIA15Y0AE3035";
 url[index++] = "http://www.amazon.com/DigitalsOnDemand-15-Item-Accessory-Bundle-Samsung/dp/B0088JR6WU/ref=sr_1_10?s=pc&ie=UTF8&qid=1366776461&sr=1-10";
 //url[index++] = "http://www.amazon.com/Rotating-Samsung-Multi-angle-Sheath-Protector/dp/B00BKNPD1W/ref=sr_1_7?s=pc&ie=UTF8&qid=1366776461&sr=1-7";
 //url[index++] = "http://www.amazon.com/CrazyOnDigital-Leather-Charger-Protector-Samsung/dp/B0083XTNJK/ref=sr_1_12?s=pc&ie=UTF8&qid=1366776461&sr=1-12";
@@ -22,38 +23,40 @@ var fs = require('fs');
 fs.write("output.txt", '', 'w');	//remove this when features are to be obtained from multiple pages
 fs.write("grmmInput.txt", '', 'w');
 
-var page = require('webpage').create();
-var p = require('webpage').create();
-
-page.onConsoleMessage = function(msg) {
-    console.log(msg);
-    if (msg.substring(0,5) === 'grmm:') {
-    	fs.write("grmmInput.txt", msg.substring(5), 'a');
-        fs.write("grmmInput.txt", '\n', 'a');
-    } else {
-    	fs.write("output.txt", msg, 'a');
-        fs.write("output.txt", '\n', 'a');
-    }
-};
-
-p.onConsoleMessage = function(msg) {
-	console.log(msg);
-};
-
 index = -1;
 
-var serviceResponse;
-
-page.onCallback = function(arg) {
-	if (arg === 'mmd')
-		return serviceResponse;
-	if (arg === 'url')
-		return url[index];
-};
-
 var main = function() {
-	if (++index >= 1/*url.length*/)
+	if (++index >= 2/*url.length*/)
 		return;
+	
+	//console.log("started processing page " + (index + 1));
+	
+	var page = require('webpage').create();
+	var p = require('webpage').create();
+
+	page.onConsoleMessage = function(msg) {
+	    console.log(msg);
+	    if (msg.substring(0,5) === 'grmm:') {
+	    	fs.write("grmmInput.txt", msg.substring(5), 'a');
+	        fs.write("grmmInput.txt", '\n', 'a');
+	    } else {
+	    	fs.write("output.txt", msg, 'a');
+	        fs.write("output.txt", '\n', 'a');
+	    }
+	};
+
+	p.onConsoleMessage = function(msg) {
+		console.log(msg);
+	};
+
+	var serviceResponse;
+	
+	page.onCallback = function(arg) {
+		if (arg === 'mmd')
+			return serviceResponse;
+		if (arg === 'url')
+			return url[index];
+	};
 	
 	var serviceURL = "http://ecology-service.cse.tamu.edu/BigSemanticsService/mmd.json?url=" + encodeURIComponent(url[index]);
 	
@@ -90,6 +93,8 @@ var main = function() {
 				var labeledNodes = getLabeledNodesFromMetaMetadata(getMmdFromService());	                
 	            addLabelsAndExtractFeatures(labeledNodes, document);
 			});
+			
+			//console.log("finished processing page " + (index + 1));
 			
 			page.close();
 			p.close();
