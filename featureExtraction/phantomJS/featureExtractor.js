@@ -111,6 +111,7 @@
 	    	nodeArr[elemIndex++] = nodeObj;
 	    
 	    var treeDepth = 0;
+	    nodeObj.height = 0;
 	    if (children.length !== 0) {
 	        for (var i = 0; i < children.length; i++) {
 	        	if (children[i].nodeType !== textNodeType && children[i].nodeType !== commentNodeType) {
@@ -123,8 +124,6 @@
 	        	}
 	        }
 	    }
-	    else
-	    	nodeObj.height = 0;
 	    	
 	    return treeDepth;
 	};
@@ -243,8 +242,8 @@
 				// we are subtracting the diff from threshold to assign higher values to strongly related nodes 
 				relx += (POSITION_THRESHOLD - Math.abs(nodeArr[i].x - nodeArr[j].x));
 				rely += (POSITION_THRESHOLD - Math.abs(nodeArr[i].y - nodeArr[j].y));
-				relw += (POSITION_THRESHOLD - Math.abs(nodeArr[i].w - nodeArr[j].w));
-				relh += (POSITION_THRESHOLD - Math.abs(nodeArr[i].h - nodeArr[j].h));
+				relw += (SIZE_THRESHOLD - Math.abs(nodeArr[i].w - nodeArr[j].w));
+				relh += (SIZE_THRESHOLD - Math.abs(nodeArr[i].h - nodeArr[j].h));
 				relr += (COLOR_THRESHOLD - Math.abs(rgb1[0] - rgb2[0]));
 				relg += (COLOR_THRESHOLD - Math.abs(rgb1[1] - rgb2[1]));
 				relb += (COLOR_THRESHOLD - Math.abs(rgb1[2] - rgb2[2]));
@@ -325,8 +324,16 @@
 					+ " cPrice:" + nodeArr[i].cPrice + " cRating:" + nodeArr[i].cRating + " cReview:" + nodeArr[i].cReview;
 			}
 			
-			str += " relx:" + relx + " rely:" + rely + " relw:" + relw + " relh:" + relh 
-				+ " relr:" + relr + " relg:" + relg + " relb:" + relb + " relfr:" + relfr + " relfg:" + relfg + " relfb:" + relfb;
+			if (relx > 0) str += " relx:" + relx;
+			if (rely > 0) str += " rely:" + rely;
+			if (relw > 0) str += " relw:" + relw;
+			if (relh > 0) str += " relh:" + relh;
+			if (relr > 0) str += " relr:" + relr;
+			if (relg > 0) str += " relg:" + relg;
+			if (relb > 0) str += " relb:" + relb;
+			if (relfr > 0) str += " relfr:" + relfr;
+			if (relfg > 0) str += " relfg:" + relfg;
+			if (relfb > 0) str += " relfb:" + relfb;
 			
 			outputStr += str;
 			console.log(outputStr);
