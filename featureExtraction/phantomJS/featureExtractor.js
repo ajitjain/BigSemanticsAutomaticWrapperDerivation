@@ -308,19 +308,19 @@
 				+ " btw:" + borderObj.topwidth + " bbw:" + borderObj.bottomwidth;
 		}
 
-		if (borderObj.leftcolor != undefined) {
+		if (borderObj.leftcolor !== undefined) {
 			rgb = borderObj.leftcolor.match(/(\d+)/g);
 			str += " blcr:" + rgb[0] + " blcg:" + rgb[1] + " blcb:" + rgb[2];
 		}
-		if (borderObj.rightcolor != undefined) { 
+		if (borderObj.rightcolor !== undefined) { 
 			rgb = borderObj.rightcolor.match(/(\d+)/g);
 			str += " brcr:" + rgb[0] + " brcg:" + rgb[1] + " brcb:" + rgb[2];
 		}
-		if (borderObj.topcolor != undefined) {
+		if (borderObj.topcolor !== undefined) {
 			rgb = borderObj.topcolor.match(/(\d+)/g);
 			str += " btcr:" + rgb[0] + " btcg:" + rgb[1] + " btcb:" + rgb[2];
 		}
-		if (borderObj.bottomcolor != undefined) {
+		if (borderObj.bottomcolor !== undefined) {
 			rgb = borderObj.bottomcolor.match(/(\d+)/g);
 			str += " bbcr:" + rgb[0] + " bbcg:" + rgb[1] + " bbcb:" + rgb[2];
 		}

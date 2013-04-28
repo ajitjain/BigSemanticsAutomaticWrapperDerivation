@@ -5,8 +5,11 @@
 
 var index = 0;
 var url = new Array();
-url[index++] = "http://www.newegg.com/Product/Product.aspx?Item=9SIA15Y0AE3035";
-url[index++] = "http://www.amazon.com/DigitalsOnDemand-15-Item-Accessory-Bundle-Samsung/dp/B0088JR6WU/ref=sr_1_10?s=pc&ie=UTF8&qid=1366776461&sr=1-10";
+//url[index++] = "http://www.newegg.com/Product/Product.aspx?Item=9SIA15Y0AE3035";
+//url[index++] = "http://www.newegg.com/Product/Product.aspx?Item=N82E16813128532";
+url[index++] = "http://www.walmart.com/ip/The-Hobbit-An-Unexpected-Journey-DVD-UltraViolet-Widescreen/23263613";
+//url[index++] = "http://www.target.com/p/keurig-elite-single-cup-home-brewing-system-k40/-/A-10174593";
+//url[index++] = "http://www.amazon.com/DigitalsOnDemand-15-Item-Accessory-Bundle-Samsung/dp/B0088JR6WU/ref=sr_1_10?s=pc&ie=UTF8&qid=1366776461&sr=1-10";
 //url[index++] = "http://www.amazon.com/Rotating-Samsung-Multi-angle-Sheath-Protector/dp/B00BKNPD1W/ref=sr_1_7?s=pc&ie=UTF8&qid=1366776461&sr=1-7";
 //url[index++] = "http://www.amazon.com/CrazyOnDigital-Leather-Charger-Protector-Samsung/dp/B0083XTNJK/ref=sr_1_12?s=pc&ie=UTF8&qid=1366776461&sr=1-12";
 //url[index++] = "http://www.amazon.com/ArmorSuit-MilitaryShield-Protector-Lifetime-Replacements/dp/B00CA9I3LC/ref=sr_1_8?s=pc&ie=UTF8&qid=1366776459&sr=1-8";
@@ -26,7 +29,7 @@ fs.write("grmmInput.txt", '', 'w');
 index = -1;
 
 var main = function() {
-	if (++index >= 2/*url.length*/)
+	if (++index >= 1/*url.length*/)
 		return;
 	
 	//console.log("started processing page " + (index + 1));
@@ -56,6 +59,11 @@ var main = function() {
 			return serviceResponse;
 		if (arg === 'url')
 			return url[index];
+		if (arg === 'main') {
+			page.close();
+			p.close();
+			main();
+		}			
 	};
 	
 	var serviceURL = "http://ecology-service.cse.tamu.edu/BigSemanticsService/mmd.json?url=" + encodeURIComponent(url[index]);
@@ -80,27 +88,29 @@ var main = function() {
 			 */
 			page.evaluate(function() {
 				var url = window.callPhantom('url');
-								
-				if (performAction(url))
-					waitForContent();
-				    				
+
 				var getMmdFromService = function() {
 	               	rawExtraction = false;
 	            	var mmd = window.callPhantom('mmd');
 	            	return mmd;
 	            }
-	            
-				var labeledNodes = getLabeledNodesFromMetaMetadata(getMmdFromService());	                
-	            addLabelsAndExtractFeatures(labeledNodes, document);
+				
+				var extractData = function() {
+					
+					var labeledNodes = getLabeledNodesFromMetaMetadata(getMmdFromService());	                
+		            addLabelsAndExtractFeatures(labeledNodes, document);
+		            
+		            window.callPhantom('main');
+					//console.log("finished processing page " + (index + 1));
+				};
+				
+				if (performAction(url)) {
+					waitForContent(extractData);
+				} else {
+					extractData();
+				}
+				
 			});
-			
-			//console.log("finished processing page " + (index + 1));
-			
-			page.close();
-			p.close();
-			
-			main();
-	        //phantom.exit();
 	    }
 	});
 };
