@@ -8,7 +8,9 @@ var url = new Array();
 //url[index++] = "http://www.newegg.com/Product/Product.aspx?Item=9SIA15Y0AE3035";
 //url[index++] = "http://www.newegg.com/Product/Product.aspx?Item=N82E16813128532";
 url[index++] = "http://www.walmart.com/ip/The-Hobbit-An-Unexpected-Journey-DVD-UltraViolet-Widescreen/23263613";
+url[index++] = "http://www.walmart.com/ip/Twister-Dance/21097609";
 //url[index++] = "http://www.target.com/p/keurig-elite-single-cup-home-brewing-system-k40/-/A-10174593";
+//url[index++] = "http://www.target.com/p/daxx-men-s-bifold-leather-wallet-tan/-/A-14168682#prodSlot=medium_1_9";
 //url[index++] = "http://www.amazon.com/DigitalsOnDemand-15-Item-Accessory-Bundle-Samsung/dp/B0088JR6WU/ref=sr_1_10?s=pc&ie=UTF8&qid=1366776461&sr=1-10";
 //url[index++] = "http://www.amazon.com/Rotating-Samsung-Multi-angle-Sheath-Protector/dp/B00BKNPD1W/ref=sr_1_7?s=pc&ie=UTF8&qid=1366776461&sr=1-7";
 //url[index++] = "http://www.amazon.com/CrazyOnDigital-Leather-Charger-Protector-Samsung/dp/B0083XTNJK/ref=sr_1_12?s=pc&ie=UTF8&qid=1366776461&sr=1-12";
@@ -27,12 +29,10 @@ fs.write("output.txt", '', 'w');	//remove this when features are to be obtained 
 fs.write("grmmInput.txt", '', 'w');
 
 index = -1;
+var main_enabled = true;
 
 var main = function() {
-	if (++index >= 1/*url.length*/)
-		return;
-	
-	//console.log("started processing page " + (index + 1));
+	console.log("\nstarted processing page " + (index + 1) + ": " + url[index]);
 	
 	var page = require('webpage').create();
 	var p = require('webpage').create();
@@ -59,14 +59,12 @@ var main = function() {
 			return serviceResponse;
 		if (arg === 'url')
 			return url[index];
-		if (arg === 'main') {
-			page.close();
-			p.close();
-			main();
-		}			
+		if (arg === 'main')
+			main_enabled = true;
 	};
 	
-	var serviceURL = "http://ecology-service.cse.tamu.edu/BigSemanticsService/mmd.json?url=" + encodeURIComponent(url[index]);
+	//var serviceURL = "http://ecology-service.cse.tamu.edu/BigSemanticsService/mmd.json?url=" + encodeURIComponent(url[index]);
+	var serviceURL = "http://localhost/BigSemanticsService/mmd.json?url=" + encodeURIComponent(url[index]);
 	
 	p.open(serviceURL, function(status) {
 		if (status === "success") {
@@ -100,8 +98,8 @@ var main = function() {
 					var labeledNodes = getLabeledNodesFromMetaMetadata(getMmdFromService());	                
 		            addLabelsAndExtractFeatures(labeledNodes, document);
 		            
+		            console.log("\nfinished processing page: " + url);
 		            window.callPhantom('main');
-					//console.log("finished processing page " + (index + 1));
 				};
 				
 				if (performAction(url)) {
@@ -115,4 +113,23 @@ var main = function() {
 	});
 };
 
-main();
+var interval_cnt = 0;
+var process_interval = setInterval(function() {
+	//console.log(main_enabled);
+	if(main_enabled) {
+		main_enabled = false;
+		
+		if (++index >= url.length) {
+			clearInterval(process_interval);
+			phantom.exit();
+		} else {
+			main();
+		}
+	} else {
+		// to skip over some page that hangs forever
+		if (++interval_cnt >= 20) {
+			interval_cnt = 0;
+			main_enabled = true;
+		}
+	}
+}, 1000);

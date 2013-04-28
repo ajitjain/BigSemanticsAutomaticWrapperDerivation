@@ -15,7 +15,7 @@
 	
 	var getPosition = function(elt) {
 		//a top-down recursion was not convenient as several nested elements have same offsetParent
-		var x = 0, y = 0;
+		var x = 0, y = 0;	
 		while (elt && (typeof elt.offsetLeft !== "undefined") && (typeof elt.offsetTop !== "undefined") &&
 								!isNaN(elt.offsetLeft) && !isNaN(elt.offsetTop))
 		{
@@ -56,6 +56,11 @@
 		
 		nodeObj.x = pos.left; nodeObj.y = pos.top; nodeObj.w = root.offsetWidth; nodeObj.h = root.offsetHeight;
     	nodeObj.bg = bgcolor;
+		// TODO: this condition added temporary for values like initial / transparent / inherit. 
+		// should actually be obtained somehow
+    	if (nodeObj.bg.substring(0,3) !== 'rgb')
+    		nodeObj.bg = 'rgba(0, 0, 0, 0)';
+    	
 //	    console.log("node: " + root.nodeName + 
 //	    					" x: " + pos.left + " y: " + pos.top + " w: " + root.offsetWidth + " h: " + root.offsetHeight);
 	    
@@ -350,7 +355,7 @@
 	
 	var output = function(node, str) {
 		var outputStr = "label:" + node.label + " id:" + str;
-		console.log(outputStr);
+		//console.log(outputStr);
 		
 		if (node.label !== undefined) {
 			var grmmStr = "grmm:" + node.label + " ----" + str;
