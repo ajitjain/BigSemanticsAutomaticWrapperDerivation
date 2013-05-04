@@ -87,7 +87,7 @@
             		 node = node.ownerElement;
             	 labeledNodeArr[labeledNodeArrIndex++] = {node:node, label:mmdScalarField.name, value:stringValue};
                  //print(node);
-                 console.log("node: " + node + " label: " + mmdScalarField.name + " value: " + stringValue + " xpath: " + xpathString);
+                 console.log("content:node: " + node + " label: " + mmdScalarField.name + " value: " + stringValue + " xpath: " + xpathString);
              }                        
         } else if (fieldParserKey != null) {
             stringValue = getFieldParserValueByKey(fieldParserContext, fieldParserKey);
