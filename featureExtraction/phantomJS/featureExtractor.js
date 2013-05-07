@@ -147,6 +147,19 @@
 		return str;
 	};
 	
+	var isIncluded = function(nodeName) {
+		return (nodeName === "p" || nodeName === "h1" || nodeName === "h2" || nodeName === "h3" || nodeName === "h4" ||
+				nodeName === "h5" || nodeName === "h6" || nodeName === "blockquote" || nodeName === "a" ||
+				nodeName === "img" || nodeName === "span" || nodeName === "ul" || nodeName === "ol" || nodeName === "li" ||
+				nodeName === "dl" || nodeName === "dt" || nodeName === "dd" || nodeName === "td" || nodeName === "th" ||
+				nodeName === "input" || nodeName === "textarea" || nodeName === "select" || nodeName === "option" ||
+				nodeName === "button" || nodeName === "label" || nodeName === "fieldset" ||
+				/* adding these for textnodeType as we would want to go further up */
+				nodeName === "strong" || nodeName === "em" || nodeName === "pre" || nodeName === "tt" ||
+			    nodeName === "span" || nodeName === "a" || nodeName === "sup" || nodeName === "sub" || 
+			    nodeName === "b" || nodeName === "i" || nodeName === "big" || nodeName === "small");
+	};
+	
 	var getPosition = function(elt) {
 		//a top-down recursion was not convenient as several nested elements have same offsetParent
 		var x = 0, y = 0;	
@@ -160,141 +173,173 @@
 		return {left: x, top: y};
 	};            	
 	 
-	var getTreeDepthAndLocalFeatures = function(root) {
+	var getTreeDepthAndLocalFeatures = function(root, label) {
 //		console.log("");
 		var nodeObj = new Object();
 		nodeObj.node = root;
+		nodeObj.bExtractRelational = true; //false; //we are now dealing with formatters in another way
 		
 		var children = root.childNodes;
-		
-		var out = true;
-		nodeObj.bExtractRelational = false;
-		
-		var nodeName = root.nodeName.toLowerCase();
-	    if (nodeName !== "html" && nodeName !== "body" &&
-	    	nodeName !== "script" && nodeName !== "style" &&
-	    	nodeName !== "meta" && nodeName !== "head" &&
-	    	nodeName !== "br" && nodeName !== "noscript" &&
-	    	nodeName !== "form" && nodeName !== "input")
+		var treeDepth = 0;
+	    var nodeName = root.nodeName.toLowerCase();
+	    
+	    //the following list is of the elements that we dont want to traverse 
+	    if (nodeName !== "head" && nodeName !== "script" && nodeName !== "style" &&	nodeName !== "noscript" && nodeName !== "br")
 	    {
 	    	//if only labeled nodes should be extracted move this block out to caller or make it an outer block
-			nodeObj.label = 'other';
-			if (labeledNodeArr instanceof Array) {
+	    	var label_transition = false;
+			nodeObj.label = label;
+			if (label === 'other' && labeledNodeArr instanceof Array) {
 				for (var i = 0; i < labeledNodeArr.length; i++) {
 					if (/*equals*/(labeledNodeArr[i].node === root)) {
-	//					console.log("labeled: " + labeledNodeArr[i].label);
+//						console.log("labeled: " + labeledNodeArr[i].label);
 						nodeObj.label = labeledNodeArr[i].label;
+						label_transition = true;
 						break;
 					}
 				}
 			}
-			
-			// first extract only those local features which are required for establishing relations 
-			// and extract remaining at the starting of the relational features calculation
-			var bgcolor = "";
-			if (typeof root.style !== "undefined") {
-				bgcolor = root.style.backgroundColor;
-				if (bgcolor === "" /*&& window.getComputedStyle*/) {
-					bgcolor = document.defaultView.getComputedStyle(root,null).getPropertyValue('background-color');
-				}
-			};
-				                	
-			var pos = getPosition(root);
-			
-			nodeObj.x = pos.left; nodeObj.y = pos.top; nodeObj.w = root.offsetWidth; nodeObj.h = root.offsetHeight;
-	    	nodeObj.bg = bgcolor;
-			// TODO: this condition added temporary for values like initial / transparent / inherit. 
-			// should actually be obtained somehow
-	    	if (nodeObj.bg.substring(0,3) !== 'rgb')
-	    		nodeObj.bg = 'rgba(0, 0, 0, 0)';
 	    	
-	//	    console.log("node: " + root.nodeName + 
-	//	    					" x: " + pos.left + " y: " + pos.top + " w: " + root.offsetWidth + " h: " + root.offsetHeight);
-		    
-		    //as we are already visiting text nodes for fgcolor, so also calculate
-		    //word count and semantic properties simultaneously
-		    for (var i = 0; i < children.length; i++) {
-		    	//condition helps in keeping the parent nodeName (a, h2, etc.)
-		        if (children[i].childNodes.length === 0 && children[i].nodeType !== commentNodeType) {
-		           	var text = children[i].data;
-		            if (typeof text !== "undefined") {
-		            	var trimTxt = text.replace(/^\s+|\s+$/g, "");
-		            	if (trimTxt.length > 0) {
-			            	var fontsize = root.style.fontSize;
-			            	if (fontsize === "" /*&& window.getComputedStyle*/) {
-			            		fontsize = document.defaultView.getComputedStyle(root,null).getPropertyValue('font-size');
-			            	}
-			            	
-			            	var color = root.style.color;
-			            	if (color === "" /*&& window.getComputedStyle*/) {
-			            		color = document.defaultView.getComputedStyle(root,null).getPropertyValue('color');
-			            	}
-			            	
-			            	nodeObj.wc = trimTxt.match(/[^\s]+/g).length;
-			            	nodeObj.cPrice = (trimTxt.search("price") >= 0 || trimTxt.search("Price") >= 0);
-			            	nodeObj.cRating = (trimTxt.search("rating") >= 0 || trimTxt.search("Rating") >= 0);
-			            	nodeObj.cReview = (trimTxt.search("review") >= 0 || trimTxt.search("Review") >= 0);		            	
-			            	nodeObj.fontsize = fontsize;
-	//		            	console.log("	text node: " + root.nodeName + " text: " + text + 
-	//            													" fontSize: " + fontsize + " color: " + color);
-			            	
-			            	//later make the variable false to avoid unnecessary overwrites of same information?
-			            	//if (bAddForRelationalFeatures)
-			            		nodeObj.fg = color;
-			            }
-		            }
+	    	nodeObj.height = 0;
+		    if (children.length !== 0) {
+		        for (var i = 0; i < children.length; i++) {
+		        	if (children[i].nodeType !== commentNodeType) {
+		        		//if (nodeObj.label === 'description') console.log("alabel:" + nodeObj.label + " node:" + nodeName + " child:" + children[i].nodeName);
+		            	var currdepth = 1 + getTreeDepthAndLocalFeatures(children[i], nodeObj.label);
+//		                console.log("tree depth at node " + children[i].nodeName + " : " + currdepth);
+		                if (currdepth > treeDepth) {
+		                  	treeDepth = currdepth;
+		                }
+		                nodeObj.height = currdepth;
+		        	}
 		        }
 		    }
+		    //if (nodeObj.label !== 'other') console.log("blabel:" + nodeObj.label + " node:" + nodeName + " include:" + root.include
+		    	//	+ " " + label_transition + " " + root.offsetWidth + " " + root.offsetHeight);
 		    
-		    //relational features are based on the fact that they are positionally and visually closer
-		    //in addition to these, their fontsize and depth relative to the maximum are also considered,
-		    //along with the changes in features w.r.t. depth and changes in dom node names.
-		    if ((nodeObj.label !== 'other') || ((root.offsetWidth != 0 || root.offsetHeight != 0) && 
-		    	nodeName !== "strong" && nodeName !== "pre" && nodeName != "em" && 
-		    	nodeName !== "span" && nodeName != "cite" && nodeName !== "sup" &&
-		    	nodeName !== "sub")) { //restore span?
-		    	nodeObj.bExtractRelational = true;
+		    // we are only going to add visible leaf nodes 
+		    if ((children.length === 0 || root.include === true) && root.offsetWidth !== 0 && root.offsetHeight !== 0) 
+		    {
+		    	//if (nodeObj.label !== 'other') console.log("in");
+		       	var include = false;
+		    	// for the nodes in list, we want to include parent instead; i.e. else if part is executed
+		    	// text node gets checked with first condition; while the list is mostly for formatters of text node 
+		    	if (root.nodeType !== textNodeType &&
+		    		nodeName !== "strong" && nodeName !== "em" && nodeName !== "pre" && nodeName !== "tt" &&
+			    	nodeName !== "span" && nodeName !== "a" && nodeName !== "sup" && nodeName !== "sub" && 
+			    	nodeName !== "b" && nodeName !== "i" && nodeName !== "big" && nodeName !== "small") //restore span? 
+		    	{ 
+		    		//nodeObj.bExtractRelational = true;
+			    	include = isIncluded(nodeName) || root.include;
+			    	//if (nodeObj.label !== 'other') console.log("label:" + nodeObj.label + " node:" + nodeName + " include:" + include);
+			    }
+		    	else if (!label_transition) // not if the formatter happens to be a labeled node 
+		    	{
+			    	var parent_include = isIncluded(root.parentNode.nodeName.toLowerCase()); // as we dont want to reset parent accidently
+			    	//if (nodeObj.label !== 'other') console.log(root.parentNode.nodeName.toLowerCase() + ":" +parent_include);
+			    	
+			    	if (parent_include && typeof root.parentNode.include === "undefined") {
+			    		//if (nodeObj.label !== 'other') console.log("plabel:" + nodeObj.label + " node:" + nodeName);
+			    		root.parentNode.include = true;
+			    	}
+			    	if (!parent_include) {
+			    		//if (nodeObj.label !== 'other') console.log("ilabel:" + nodeObj.label + " node:" + nodeName);
+			    		if (root.nodeType !== textNodeType)
+			    			include = true;
+			    		else
+			    			root.parentNode.include = true;			    		
+			    	}
+			    }
+		    	else // the element is a formatter but is a labeled item 
+		    	{
+		    		//if (nodeObj.label !== 'other') console.log("include: " + nodeName);
+		    		include = true;
+		    	}
+			    
+			    if (include)
+			    {		    	
+					// first extract only those local features which are required for establishing relations 
+					// and extract remaining at the starting of the relational features calculation
+					var bgcolor = "";
+					if (typeof root.style !== "undefined") {
+						bgcolor = root.style.backgroundColor;
+						if (bgcolor === "" /*&& window.getComputedStyle*/) {
+							bgcolor = document.defaultView.getComputedStyle(root,null).getPropertyValue('background-color');
+						}
+					}
+						                	
+					var pos = getPosition(root);
+					
+					nodeObj.x = pos.left; nodeObj.y = pos.top; nodeObj.w = root.offsetWidth; nodeObj.h = root.offsetHeight;
+			    	nodeObj.bg = bgcolor;
+					// TODO: this condition added temporary for values like initial / transparent / inherit. 
+					// should actually be obtained somehow
+			    	if (nodeObj.bg.substring(0,3) !== 'rgb')
+			    		nodeObj.bg = 'rgba(0, 0, 0, 0)';
+			    	
+	//			    console.log("node: " + root.nodeName + 
+	//	    							" x: " + pos.left + " y: " + pos.top + " w: " + root.offsetWidth + " h: " + root.offsetHeight);
+				    
+				    //as we are already visiting text nodes for fgcolor, so also calculate
+				    //word count and semantic properties simultaneously
+				    for (var i = 0; i < children.length; i++) {
+				    	//condition helps in keeping the parent nodeName (a, h2, etc.)
+				        if (children[i].childNodes.length === 0 && children[i].nodeType !== commentNodeType) {
+				           	var text = children[i].data;
+				            if (typeof text !== "undefined") {
+				            	var trimTxt = text.replace(/^\s+|\s+$/g, "");
+				            	if (trimTxt.length > 0) {
+					            	var fontsize = root.style.fontSize;
+					            	if (fontsize === "" /*&& window.getComputedStyle*/) {
+					            		fontsize = document.defaultView.getComputedStyle(root,null).getPropertyValue('font-size');
+					            	}
+					            	
+					            	var color = root.style.color;
+					            	if (color === "" /*&& window.getComputedStyle*/) {
+					            		color = document.defaultView.getComputedStyle(root,null).getPropertyValue('color');
+					            	}
+					            	
+					            	nodeObj.wc = trimTxt.match(/[^\s]+/g).length;
+					            	nodeObj.cPrice = (trimTxt.search("price") >= 0 || trimTxt.search("Price") >= 0);
+					            	nodeObj.cRating = (trimTxt.search("rating") >= 0 || trimTxt.search("Rating") >= 0);
+					            	nodeObj.cReview = (trimTxt.search("review") >= 0 || trimTxt.search("Review") >= 0);		            	
+					            	nodeObj.fontsize = fontsize;
+	//				            	console.log("	text node: " + root.nodeName + " text: " + text + 
+	//		            													" fontSize: " + fontsize + " color: " + color);
+					            	
+					            	//later make the variable false to avoid unnecessary overwrites of same information?
+					            	//if (bAddForRelationalFeatures)
+					            		nodeObj.fg = color;
+					            }
+				            }
+				        }
+				    }				    
+				    console.log(arrIndex + ": " + nodeObj.label);
+				    nodeArr[arrIndex++] = nodeObj;				    
+			    }
 		    }
 	    }
-	    else
-	    {
-	    	out = false;
-	    }
-	    
-	    var treeDepth = 0;
-	    nodeObj.height = 0;
-	    if (children.length !== 0) {
-	        for (var i = 0; i < children.length; i++) {
-	        	if (children[i].nodeType !== textNodeType && children[i].nodeType !== commentNodeType) {
-	            	var currdepth = 1 + getTreeDepthAndLocalFeatures(children[i]);
-//	                console.log("tree depth at node " + children[i].nodeName + " : " + currdepth);
-	                if (currdepth > treeDepth) {
-	                  	treeDepth = currdepth;
-	                }
-	                nodeObj.height = currdepth;
-	        	}
-	        }
-	    }
-	    
-	    if (out) {
-	    	nodeArr[arrIndex++] = nodeObj;
-	    }
-	    	
 	    return treeDepth;
 	};
 	
+	//relational features are based on the fact that they are positionally and visually closer
+    //in addition to these, their fontsize and depth relative to the maximum are also considered,
+    //along with the changes in features w.r.t. depth and changes in dom node names.
 	var calculateRelationalFeatures = function() {
 //		console.log("");
 //		console.log("Relational features :: num regions: " + regionArr.length + "," + colorArr.length);
-		 
+	    		 
 		var POSITION_THRESHOLD = 150; //divide this into top-left, bottom-right, and hori-vert centers?
 		var SIZE_THRESHOLD = 300;	  //what would be a good value for this?
 		var COLOR_THRESHOLD = 128;    //separate this into bgcolor and fgcolor
 		
-		var len = nodeArr.length;                	
+		var len = nodeArr.length;    
+		console.log("arrlen: " + len);
 		for (var i = 0; i < len; i++) {
 			var str = featureStr(nodeArr[i]);
+			console.log(i + ": " + nodeArr[i].label);
 			if (nodeArr[i].bExtractRelational) {
+				console.log(i + ": " + nodeArr[i].label);
 				var relStr = 'rel:' + i + ":";
 				var bRelated = false;
 				var relx = 0, rely = 0, relw = 0, relh = 0, relr = 0, relg = 0, relb = 0, relfr = 0, relfg = 0, relfb = 0;
@@ -385,7 +430,7 @@
 		
 		labeledNodeArr = labeledNodes;
 		
-		console.log("DOM Tree Depth: " + getTreeDepthAndLocalFeatures(document.documentElement));
+		console.log("DOM Tree Depth: " + getTreeDepthAndLocalFeatures(document.documentElement, 'other'));
 		
 		calculateRelationalFeatures();
 	};

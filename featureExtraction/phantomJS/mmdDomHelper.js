@@ -158,6 +158,11 @@
         for (var i = 0; i < size; ++i) {
 //                        console.log("\tCollection Result Index: " + i);
             var thisNode = (nodeList == undefined || nodeList == null) ? null : nodeList.snapshotItem(i);
+            if (thisNode != null) {
+    		    var stringValue = thisNode.textContent;
+    		    labeledNodeArr[labeledNodeArrIndex++] = {node:thisNode, label:mmdCollectionField.name, value:stringValue};
+    		    console.log("content:node: " + thisNode + " label: " + mmdCollectionField.name + " value: " + stringValue + " xpath: " + mmdCollectionField.xpath);
+            }
             var thisFieldParserContext = (fieldParserContextList == undefined || fieldParserContextList == null) ? null : fieldParserContextList[i];
             if (mmdCollectionField.childScalarType) { // collection of scalars
             	//console.log("\tscalars");
@@ -177,7 +182,7 @@
                 }
                 else {
                     var element = { };
-                    element = recursivelyExtractNodes(mmdCollectionField.kids[0].composite, thisNode, element, thisFieldParserContext);
+                    //element = recursivelyExtractNodes(mmdCollectionField.kids[0].composite, thisNode, element, thisFieldParserContext);
 
                     var newElement = clone(element);
                     	
@@ -229,6 +234,12 @@
         //    newContextNode = getNodeWithXPath(contextNode, mmdCompositeField.xpath);
         var thisNode = fieldParserHelper.node;
         var thisFieldParserContext = fieldParserHelper.fieldParserContext;
+        
+        if (thisNode != null) {
+		    var stringValue = thisNode.textContent;
+		    labeledNodeArr[labeledNodeArrIndex++] = {node:thisNode, label:mmdCompositeField.name, value:stringValue};
+		    console.log("content:node: " + thisNode + " label: " + mmdCompositeField.name + " value: " + stringValue + " xpath: " + mmdCompositeField.xpath);
+        }
 
         if (mmdCompositeField.parse_as_hypertext == true || mmdCompositeField.type == "hypertext_para") {
             var paraNode = getNodeWithXPath(contextNode, mmdCompositeField.xpath);
@@ -248,7 +259,8 @@
 //                    console.info(mmdCompositeField);
 
         var compositeMetadata = { };
-        compositeMetadata = recursivelyExtractNodes(mmdCompositeField, thisNode, compositeMetadata, thisFieldParserContext);
+        //commented this as we are treating composites in entirety
+        //compositeMetadata = recursivelyExtractNodes(mmdCompositeField, thisNode, compositeMetadata, thisFieldParserContext);
 
         if (!isEmpty(compositeMetadata)) {
             if (mmdCompositeField.hasOwnProperty('mm_name'))
