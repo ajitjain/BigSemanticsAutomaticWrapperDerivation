@@ -15,7 +15,7 @@ var performAction = function(url) {
 		return true;
 	} else if (url.indexOf("www.walmart.com") >= 0) {
 		site = 'walmart';
-		return true;
+		return false;
 	} else if (url.indexOf("www.newegg.com") >= 0) {
 		site = 'newegg';
 		return true;
@@ -38,8 +38,8 @@ var waitForContent = function(callback, timeoutMillis) {
         				&& ((document.getElementsByClassName("context-buttom-gap tabtextfont") !== null) 
         					|| (document.getElementsByClassName("context-buttom-gap innerlistings") !== null));
         	} else if (site === 'walmart') {
-        		cond = (document.getElementById("BVRRRatingSummaryLinkWriteFirstID") !== null) ||
-        					(document.getElementById("BVRRRatingSummaryLinkFirstID") !== null);
+        		cond = (document.getElementById("BVRRRatingSummaryLinkWriteID") !== null) ||
+        					(document.getElementById("BVRRRatingSummaryLinkWriteFirstID") !== null);
         	} else if (site === 'newegg') {
         		cond = (document.getElementById("CombineBoxFinalPrice") !== null);				
         	} else {
