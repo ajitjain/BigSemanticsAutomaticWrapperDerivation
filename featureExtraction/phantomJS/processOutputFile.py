@@ -3,18 +3,21 @@
 
 import math
 
-list1 = ['bgr','bgg','bgb','fgr','fgg','fgb','blcr','blcg','blcb','brcr','brcg','brcb','btcr','btcg','btcb',\
-         'bbcr','bbcg','bbcb']
-list2 = ['x','y']
-list3 = ['w','h']
+list1 = ['bgh','fgh','blch','brch','btch','btcs','btcv','bbch']
+#list11 = ['bgs','bgv','fgs','fgv','blcs','blcv','brcs','brcv','btcs','btcv',,'bbcs','bbcv']
+list2 = ['x','y','w','h']
 #list3 = ['height']
-list4 = ['relx','rely','relw','relh','relr','relg','relb','relfr','relfg','relfb']
+list4a = ['relx','rely']
+list4b = ['relw','relh']
+list4c = ['relbgh','relfgh']
+#list41 = ['relbgs','relbgv','relfgs','relfgv']
 list5 = ['wordcnt']
 list6 = ['ml','mr','mt','mb','font']
+list7 = ['aspectRatio']
 
 list = ['true', 'false', 'solid', 'none', 'auto', 'inset', 'dotted', 'undefined', 'dashed', 'groove']
 
-print len(list1) + len(list2) + len(list3) + len(list4) + len(list5) + len(list6)
+print len(list1) + len(list2) + len(list3) + len(list4) + len(list5) + len(list6) + len(list7)
 
 fr = open("grmm_train.txt", 'rb')
 lines = fr.readlines()
@@ -39,29 +42,40 @@ for line in lines:
                 if sub_token[1].endswith('px'):
                     sub_token[1] = sub_token[1].strip('px')
                 
-                sub_token[1] = int(sub_token[1])
-                
                 if sub_token[0] in list1:
-                    sub_token[1] = sub_token[1]/25
+                	sub_token[1] = int(sub_token[1])
+                    sub_token[1] = sub_token[1]/30
                 elif sub_token[0] in list2:
-                    if sub_token[1] < 4000:
-                        sub_token[1] = sub_token[1]/400
+                	sub_token[1] = float(sub_token[1])
+                    sub_token[1] = sub_token[1]*100
+                    sub_token[1] = int(sub_token[1]/8)
+                elif sub_token[0] in list4a:
+                	sub_token[1] = int(sub_token[1])
+                    if sub_token[1] < 1500:
+                        sub_token[1] = sub_token[1]/150
                     else:
-                        sub_token[1] = (4000/400) + 1
-                elif sub_token[0] in list3:
-                    if sub_token[1] < 1000:
-                        sub_token[1] = sub_token[1]/100
+                        sub_token[1] = (1500/150) + 1
+                elif sub_token[0] in list4b:
+                	sub_token[1] = int(sub_token[1])
+                    if sub_token[1] < 3000:
+                        sub_token[1] = sub_token[1]/300
                     else:
-                        sub_token[1] = (1000/100) + 1
-                elif sub_token[0] in list4:
-                    if sub_token[1] < 5000:
-                        sub_token[1] = sub_token[1]/500
+                        sub_token[1] = (3000/300) + 1
+                elif sub_token[0] in list4c:
+                	sub_token[1] = int(sub_token[1])
+                    if sub_token[1] < 300:
+                        sub_token[1] = sub_token[1]/30
                     else:
-                        sub_token[1] = (5000/500) + 1
+                        sub_token[1] = (300/30) + 1                
                 elif sub_token[0] in list5:
+                	sub_token[1] = int(sub_token[1])
                     sub_token[1] = int(math.log(sub_token[1], 2))
                 elif sub_token[0] in list6:   
+                	sub_token[1] = int(sub_token[1])
                     sub_token[1] = sub_token[1]/7
+                elif sub_token[0] in list7:
+                	sub_token[1] = float(sub_token[1])
+                	sub_token[1] = int(sub_token[1]+0.5)    
                 
             fw.write('%s:%s ' %(sub_token[0], str(sub_token[1])))
                 
