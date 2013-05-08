@@ -13,6 +13,8 @@
 	
 	var labeledNodeArr;				// passed in labeled nodes; extracted using mmd
 	
+	var maxWidth = 1, maxHeight = 1;
+	
 	var output = function(node, str) {
 		var outputStr = "label:" + node.label + " id:" + str;
 		//console.log(outputStr);
@@ -26,17 +28,20 @@
 	var featureStr = function(node) {
 		var str = "";
 		
-		var rgb = node.bg.match(/(\d+)/g);
-		if (rgb[0] !== 0 || rgb[1] !== 0 || rgb[2] !== 0 || rgb[3] === undefined || rgb[3] !== 0) {
-			str = " bgr:" + rgb[0] + " bgg:" + rgb[1] + " bgb:" + rgb[2];
+		var hsv = node.bg;
+		if (hsv[0] !== 0 || hsv[1] !== 0 || hsv[2] !== 0 || hsv[3] === undefined || hsv[3] !== 0) {
+			str = " bgh:" + hsv[0] + " bgs:" + hsv[1] + " bgv:" + hsv[2];
 		}
 		
 		if (node.fg !== undefined) {
-			rgb = node.fg.match(/(\d+)/g);
-			str += " fgr:" + rgb[0] + " fgg:" + rgb[1] + " fgb:" + rgb[2];
+			hsv = node.fg;
+			str += " fgh:" + hsv[0] + " fgs:" + hsv[1] + " fgv:" + hsv[2];
 		}
 		
-		str += " x:" + node.x + " y:" + node.y + " w:" + node.w + " h:" + node.h;
+		str += " x:" + (node.x / maxWidth).toFixed(2) + " y:" + (node.y / maxHeight).toFixed(2) 
+								+ " w:" + (node.w / maxWidth).toFixed(2) + " h:" + (node.h / maxHeight).toFixed(2);
+		
+		str += " aspectRatio:" + (node.w / node.h).toFixed(2);
 		
 		var borderObj = "", marginObj = "",	paddingObj = "";
 		var root = node.node;
@@ -107,21 +112,26 @@
 				+ " btw:" + borderObj.topwidth + " bbw:" + borderObj.bottomwidth;
 		}
 
+		var rgb;
 		if (borderObj.leftcolor !== undefined) {
 			rgb = borderObj.leftcolor.match(/(\d+)/g);
-			str += " blcr:" + rgb[0] + " blcg:" + rgb[1] + " blcb:" + rgb[2];
+			hsv = rgb2hsv(rgb[0], rgb[1], rgb[2]);
+			str += " blch:" + hsv[0] + " blcs:" + hsv[1] + " blcv:" + hsv[2];
 		}
 		if (borderObj.rightcolor !== undefined) { 
 			rgb = borderObj.rightcolor.match(/(\d+)/g);
-			str += " brcr:" + rgb[0] + " brcg:" + rgb[1] + " brcb:" + rgb[2];
+			hsv = rgb2hsv(rgb[0], rgb[1], rgb[2]);
+			str += " brch:" + hsv[0] + " brcs:" + hsv[1] + " brcv:" + hsv[2];
 		}
 		if (borderObj.topcolor !== undefined) {
 			rgb = borderObj.topcolor.match(/(\d+)/g);
-			str += " btcr:" + rgb[0] + " btcg:" + rgb[1] + " btcb:" + rgb[2];
+			hsv = rgb2hsv(rgb[0], rgb[1], rgb[2]);
+			str += " btch:" + hsv[0] + " btcs:" + hsv[1] + " btcv:" + hsv[2];
 		}
 		if (borderObj.bottomcolor !== undefined) {
 			rgb = borderObj.bottomcolor.match(/(\d+)/g);
-			str += " bbcr:" + rgb[0] + " bbcg:" + rgb[1] + " bbcb:" + rgb[2];
+			hsv = rgb2hsv(rgb[0], rgb[1], rgb[2]);
+			str += " bbch:" + hsv[0] + " bbcs:" + hsv[1] + " bbcv:" + hsv[2];
 		}
 		
 		if (borderObj.leftstyle !== 'none' || borderObj.rightstyle !== 'none' || 
@@ -144,6 +154,10 @@
 			str += " font:" + node.fontsize + " wordcnt:" + node.wc
 				+ " cPrice:" + node.cPrice + " cRating:" + node.cRating + " cReview:" + node.cReview;
 		}
+		
+		if (root.nodeName.toLowerCase() === "img")
+			str += " isImg:" + true;
+			
 		return str;
 	};
 	
@@ -174,10 +188,10 @@
 	};            	
 	 
 	var getTreeDepthAndLocalFeatures = function(root, label) {
-//		console.log("");
+		//console.log(root.nodeName);
 		var nodeObj = new Object();
 		nodeObj.node = root;
-		nodeObj.bExtractRelational = true; //false; //we are now dealing with formatters in another way
+		//nodeObj.bExtractRelational = true; //false; //we are now dealing with formatters in another way
 		
 		var children = root.childNodes;
 		var treeDepth = 0;
@@ -199,8 +213,11 @@
 					}
 				}
 			}
-	    	
-	    	nodeObj.height = 0;
+			
+			if (root.offsetWidth > maxWidth) maxWidth = root.offsetWidth;
+			if (root.offsetHeight > maxHeight) maxHeight = root.offsetHeight;
+			
+			nodeObj.height = 0;
 		    if (children.length !== 0) {
 		        for (var i = 0; i < children.length; i++) {
 		        	if (children[i].nodeType !== commentNodeType) {
@@ -214,6 +231,7 @@
 		        	}
 		        }
 		    }
+		    
 		    //if (nodeObj.label !== 'other') console.log("blabel:" + nodeObj.label + " node:" + nodeName + " include:" + root.include
 		    	//	+ " " + label_transition + " " + root.offsetWidth + " " + root.offsetHeight);
 		    
@@ -255,7 +273,7 @@
 		    		//if (nodeObj.label !== 'other') console.log("include: " + nodeName);
 		    		include = true;
 		    	}
-			    
+		    	
 			    if (include)
 			    {		    	
 					// first extract only those local features which are required for establishing relations 
@@ -267,16 +285,18 @@
 							bgcolor = document.defaultView.getComputedStyle(root,null).getPropertyValue('background-color');
 						}
 					}
-						                	
-					var pos = getPosition(root);
-					
-					nodeObj.x = pos.left; nodeObj.y = pos.top; nodeObj.w = root.offsetWidth; nodeObj.h = root.offsetHeight;
-			    	nodeObj.bg = bgcolor;
 					// TODO: this condition added temporary for values like initial / transparent / inherit. 
 					// should actually be obtained somehow
-			    	if (nodeObj.bg.substring(0,3) !== 'rgb')
-			    		nodeObj.bg = 'rgba(0, 0, 0, 0)';
+			    	if (bgcolor.substring(0,3) !== 'rgb')
+			    		bgcolor = 'rgba(0, 0, 0, 0)';
 			    	
+			    	var rgb = bgcolor.match(/(\d+)/g);
+					var pos = getPosition(root);
+				
+					nodeObj.x = pos.left; nodeObj.y = pos.top; nodeObj.w = root.offsetWidth; nodeObj.h = root.offsetHeight;
+					nodeObj.bg = rgb2hsv(rgb[0], rgb[1], rgb[2]);
+					//console.log("rgb:" + rgb + " hsv:" + nodeObj.bg);
+								    	
 	//			    console.log("node: " + root.nodeName + 
 	//	    							" x: " + pos.left + " y: " + pos.top + " w: " + root.offsetWidth + " h: " + root.offsetHeight);
 				    
@@ -285,11 +305,12 @@
 				    for (var i = 0; i < children.length; i++) {
 				    	//condition helps in keeping the parent nodeName (a, h2, etc.)
 				        if (children[i].childNodes.length === 0 && children[i].nodeType !== commentNodeType) {
-				           	var text = children[i].data;
+				        	var text = children[i].data;
 				            if (typeof text !== "undefined") {
 				            	var trimTxt = text.replace(/^\s+|\s+$/g, "");
 				            	if (trimTxt.length > 0) {
-					            	var fontsize = root.style.fontSize;
+
+				            		var fontsize = root.style.fontSize;
 					            	if (fontsize === "" /*&& window.getComputedStyle*/) {
 					            		fontsize = document.defaultView.getComputedStyle(root,null).getPropertyValue('font-size');
 					            	}
@@ -309,12 +330,15 @@
 					            	
 					            	//later make the variable false to avoid unnecessary overwrites of same information?
 					            	//if (bAddForRelationalFeatures)
-					            		nodeObj.fg = color;
+					            	var rgbfg = color.match(/(\d+)/g);
+					            	if (color.substring(0,3) === 'rgb')
+					            		nodeObj.fg = rgb2hsv(rgbfg[0], rgbfg[1], rgbfg[2]);
+					            	//console.log("rgbf:" + rgbfg + " hsv:" + nodeObj.fg);
 					            }
 				            }
 				        }
 				    }				    
-				    console.log(arrIndex + ": " + nodeObj.label);
+				    //console.log(arrIndex + ": " + nodeObj.label);
 				    nodeArr[arrIndex++] = nodeObj;				    
 			    }
 		    }
@@ -331,20 +355,24 @@
 	    		 
 		var POSITION_THRESHOLD = 150; //divide this into top-left, bottom-right, and hori-vert centers?
 		var SIZE_THRESHOLD = 300;	  //what would be a good value for this?
-		var COLOR_THRESHOLD = 128;    //separate this into bgcolor and fgcolor
+		//var COLOR_THRESHOLD = 128;    //separate this into bgcolor and fgcolor
+		var HUE_THRESHOLD = 30; 		//degrees
+		var SATURATION_THRESHOLD = 0.3;
+		var VALUE_THRESHOLD = 0.4;
 		
 		var len = nodeArr.length;    
-		console.log("arrlen: " + len);
+		//console.log("arrlen: " + len);
 		for (var i = 0; i < len; i++) {
 			var str = featureStr(nodeArr[i]);
-			console.log(i + ": " + nodeArr[i].label);
-			if (nodeArr[i].bExtractRelational) {
-				console.log(i + ": " + nodeArr[i].label);
+			//console.log(i + ": " + nodeArr[i].label);
+			//if (nodeArr[i].bExtractRelational) {
+				//console.log(i + ": " + nodeArr[i].label);
 				var relStr = 'rel:' + i + ":";
 				var bRelated = false;
-				var relx = 0, rely = 0, relw = 0, relh = 0, relr = 0, relg = 0, relb = 0, relfr = 0, relfg = 0, relfb = 0;
+				var relx = 0, rely = 0, relw = 0, relh = 0, relbh = 0, relbs = 0, relbv = 0, relfh = 0, relfs = 0, relfv = 0;
 				for (var j = (i+1); j < len; j++) {
-					if (nodeArr[j].bExtractRelational) {
+					//console.log("new iteration: " + j);
+					//if (nodeArr[j].bExtractRelational) {
 					
 						//don't consider container relationships
 						//other direction needed as html tag violates top-down dimension values
@@ -365,18 +393,13 @@
 							continue;
 						
 						//rgba?
-						var rgb1 = nodeArr[i].bg.match(/(\d+)/g);
-						var rgb2 = nodeArr[i].bg.match(/(\d+)/g);
-						if (Math.abs(rgb1[0] - rgb2[0]) >= COLOR_THRESHOLD || Math.abs(rgb1[1] - rgb2[1]) >= COLOR_THRESHOLD || 
-								Math.abs(rgb1[2] - rgb2[2]) >= COLOR_THRESHOLD)
+						if (Math.abs(nodeArr[i].bg[0] - nodeArr[j].bg[0]) >= HUE_THRESHOLD 
+								/*|| Math.abs(rgb1[1] - rgb2[1]) >= COLOR_THRESHOLD || Math.abs(rgb1[2] - rgb2[2]) >= COLOR_THRESHOLD*/)
 							continue;
 						
-						var rgbA = "", rgbB = "";
 						if (typeof nodeArr[i].fg !== "undefined" && typeof nodeArr[j].fg !== "undefined") {
-							rgbA = nodeArr[i].fg.match(/(\d+)/g);
-			    			rgbB = nodeArr[i].fg.match(/(\d+)/g);
-			    			if (Math.abs(rgbA[0] - rgbB[0]) >= COLOR_THRESHOLD || Math.abs(rgbA[1] - rgbB[1]) >= COLOR_THRESHOLD || 
-			    					Math.abs(rgbA[2] - rgbB[2]) >= COLOR_THRESHOLD)
+							if (Math.abs(nodeArr[i].fg[0] - nodeArr[j].fg[0]) >= HUE_THRESHOLD 
+								/*|| Math.abs(rgbA[1] - rgbB[1]) >= COLOR_THRESHOLD || Math.abs(rgbA[2] - rgbB[2]) >= COLOR_THRESHOLD*/)
 			    				continue;
 						}
 						
@@ -385,14 +408,14 @@
 						rely += (POSITION_THRESHOLD - Math.abs(nodeArr[i].y - nodeArr[j].y));
 						relw += (SIZE_THRESHOLD - Math.abs(nodeArr[i].w - nodeArr[j].w));
 						relh += (SIZE_THRESHOLD - Math.abs(nodeArr[i].h - nodeArr[j].h));
-						relr += (COLOR_THRESHOLD - Math.abs(rgb1[0] - rgb2[0]));
-						relg += (COLOR_THRESHOLD - Math.abs(rgb1[1] - rgb2[1]));
-						relb += (COLOR_THRESHOLD - Math.abs(rgb1[2] - rgb2[2]));
+						relbh += (HUE_THRESHOLD - Math.abs(nodeArr[i].bg[0] - nodeArr[j].bg[0]));
+						relbs += (SATURATION_THRESHOLD - Math.abs(nodeArr[i].bg[1] - nodeArr[j].bg[1]));
+						relbv += (VALUE_THRESHOLD - Math.abs(nodeArr[i].bg[2] - nodeArr[j].bg[2]));
 						
 						if (typeof nodeArr[i].fg !== "undefined" && typeof nodeArr[j].fg !== "undefined") {
-							relfr += (COLOR_THRESHOLD - Math.abs(rgbA[0] - rgbB[0]));
-							relfg += (COLOR_THRESHOLD - Math.abs(rgbA[1] - rgbB[1]));
-							relfb += (COLOR_THRESHOLD - Math.abs(rgbA[2] - rgbB[2]));
+							relfh += (HUE_THRESHOLD - Math.abs(nodeArr[i].fg[0] - nodeArr[j].fg[0]));
+							relfs += (SATURATION_THRESHOLD - Math.abs(nodeArr[i].fg[1] - nodeArr[j].fg[1]));
+							relfv += (VALUE_THRESHOLD - Math.abs(nodeArr[i].fg[2] - nodeArr[j].fg[2]));
 						}
 						
 						relStr += j + ",";
@@ -406,22 +429,22 @@
 		//				console.log("node " + nameArr[j] + " x: " + regionArr[j].x + " y: " + regionArr[j].y 
 		//								+ " w: " + regionArr[j].w + " h: " + regionArr[j].h 
 		//									+ " bg: " + colorArr[j].bg + " fg: " + colorArr[j].fg);
-					}
+					//}
 				}
 				if (relx > 0) str += " relx:" + relx;
 				if (rely > 0) str += " rely:" + rely;
 				if (relw > 0) str += " relw:" + relw;
 				if (relh > 0) str += " relh:" + relh;
-				if (relr > 0) str += " relr:" + relr;
-				if (relg > 0) str += " relg:" + relg;
-				if (relb > 0) str += " relb:" + relb;
-				if (relfr > 0) str += " relfr:" + relfr;
-				if (relfg > 0) str += " relfg:" + relfg;
-				if (relfb > 0) str += " relfb:" + relfb;
+				if (relbh > 0) str += " relbgh:" + relbh;
+				if (relbs > 0) str += " relbgs:" + relbs.toFixed(2);
+				if (relbv > 0) str += " relbgv:" + relbv.toFixed(2);
+				if (relfh > 0) str += " relfgh:" + relfh;
+				if (relfs > 0) str += " relfgs:" + relfs.toFixed(2);
+				if (relfv > 0) str += " relfgv:" + relfv.toFixed(2);
 				
 				if (bRelated)
 					console.log(relStr);
-			}			
+			//}			
 			output(nodeArr[i], str);
 		}
 	};
