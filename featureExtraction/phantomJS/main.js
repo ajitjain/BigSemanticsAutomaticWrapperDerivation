@@ -9,7 +9,7 @@ var url = new Array();
 // test urls
 //url[index++] = "http://www.newegg.com/Product/Product.aspx?Item=9SIA15Y0AE3035";
 //url[index++] = "http://www.newegg.com/Product/Product.aspx?Item=N82E16813128532";
-url[index++] = "http://www.walmart.com/ip/The-Hobbit-An-Unexpected-Journey-DVD-UltraViolet-Widescreen/23263613";
+//url[index++] = "http://www.walmart.com/ip/The-Hobbit-An-Unexpected-Journey-DVD-UltraViolet-Widescreen/23263613";
 //url[index++] = "http://www.walmart.com/ip/Twister-Dance/21097609";
 //url[index++] = "http://www.target.com/p/keurig-elite-single-cup-home-brewing-system-k40/-/A-10174593";
 //url[index++] = "http://www.target.com/p/daxx-men-s-bifold-leather-wallet-tan/-/A-14168682#prodSlot=medium_1_9";
@@ -21,16 +21,16 @@ url[index++] = "http://www.walmart.com/ip/The-Hobbit-An-Unexpected-Journey-DVD-U
 //url[index++] = "http://www.amazon.com/Samsung-Galaxy-Screen-Protector-GTP7510/dp/B005593W10/ref=sr_1_7?s=pc&ie=UTF8&qid=1366776462&sr=1-7";
 
 var fin = require('fs');
-var instream = fin.open("../../crawler/test_unseen.txt", "r");
+var instream = fin.open("../../crawler/train.txt", "r");
 
 while (!instream.atEnd())
 	url[index++] = instream.readLine();
 
 var fs = require('fs');
-fs.write("output_unseen.txt", '', 'w');	//remove this when features are to be obtained from multiple pages
-fs.write("grmm_unseen.txt", '', 'w');
-fs.write("rel_unseen.txt", '', 'w');
-fs.write("content_unseen.txt", '', 'w');
+fs.write("output_train.txt", '', 'w');	//remove this when features are to be obtained from multiple pages
+fs.write("grmm_train.txt", '', 'w');
+fs.write("rel_train.txt", '', 'w');
+fs.write("content_train.txt", '', 'w');
 
 index = -1;
 var main_enabled = true;
@@ -45,22 +45,22 @@ var main = function() {
 
 	page.onConsoleMessage = function(msg) {
 	    if (msg.substring(0,5) === 'grmm:') {
-	    	fs.write("grmm_unseen.txt", msg.substring(5), 'a');
-	        fs.write("grmm_unseen.txt", '\n', 'a');
+	    	fs.write("grmm_train.txt", msg.substring(5), 'a');
+	        fs.write("grmm_train.txt", '\n', 'a');
 	    } 
 	    else if (msg.substring(0,4) === 'rel:') {
 	    	var endIndex = msg.length - 1; //remove trailing comma
-	    	fs.write("rel_unseen.txt", msg.substring(4, endIndex), 'a');
-	        fs.write("rel_unseen.txt", '\n', 'a');
+	    	fs.write("rel_train.txt", msg.substring(4, endIndex), 'a');
+	        fs.write("rel_train.txt", '\n', 'a');
 	    }
 	    else if (msg.substring(0,8) === 'content:') {
-	    	fs.write("content_unseen.txt", msg.substring(8), 'a');
-	        fs.write("content_unseen.txt", '\n', 'a');
+	    	fs.write("content_train.txt", msg.substring(8), 'a');
+	        fs.write("content_train.txt", '\n', 'a');
 	    }
 	    else {
 	    	console.log(msg);
-	    	fs.write("output_unseen.txt", msg, 'a');
-	        fs.write("output_unseen.txt", '\n', 'a');
+	    	fs.write("output_train.txt", msg, 'a');
+	        fs.write("output_train.txt", '\n', 'a');
 	    }
 	};
 
