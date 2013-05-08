@@ -9,8 +9,8 @@ var url = new Array();
 // test urls
 //url[index++] = "http://www.newegg.com/Product/Product.aspx?Item=9SIA15Y0AE3035";
 //url[index++] = "http://www.newegg.com/Product/Product.aspx?Item=N82E16813128532";
-//url[index++] = "http://www.walmart.com/ip/The-Hobbit-An-Unexpected-Journey-DVD-UltraViolet-Widescreen/23263613";
-url[index++] = "http://www.walmart.com/ip/Twister-Dance/21097609";
+url[index++] = "http://www.walmart.com/ip/The-Hobbit-An-Unexpected-Journey-DVD-UltraViolet-Widescreen/23263613";
+//url[index++] = "http://www.walmart.com/ip/Twister-Dance/21097609";
 //url[index++] = "http://www.target.com/p/keurig-elite-single-cup-home-brewing-system-k40/-/A-10174593";
 //url[index++] = "http://www.target.com/p/daxx-men-s-bifold-leather-wallet-tan/-/A-14168682#prodSlot=medium_1_9";
 //url[index++] = "http://www.amazon.com/DigitalsOnDemand-15-Item-Accessory-Bundle-Samsung/dp/B0088JR6WU/ref=sr_1_10?s=pc&ie=UTF8&qid=1366776461&sr=1-10";
@@ -138,7 +138,7 @@ var process_interval = setInterval(function() {
 	if(main_enabled) {
 		main_enabled = false;
 		
-		if (++index >= 1/*url.length*/) {
+		if (++index >= url.length) {
 			clearInterval(process_interval);
 			phantom.exit();
 		} else {
@@ -148,9 +148,10 @@ var process_interval = setInterval(function() {
 		}
 	} else {
 		// to skip over some page that hangs forever
-		if (++interval_cnt >= 20) {
+		if (++interval_cnt >= 30) {
 			interval_cnt = 0;
 			main_enabled = true;
 		}
 	}
-}, 1000);
+	console.log("tick");
+}, 3000);
